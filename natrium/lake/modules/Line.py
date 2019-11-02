@@ -7,6 +7,7 @@ from pymongo.errors import ConnectionFailure
 import sys
 from typing import Optional, Dict, List
 from pymongo import IndexModel, DESCENDING, ASCENDING
+from ..models.character import Character
 
 class LineLake(Lake):
     Indexes = [
@@ -43,25 +44,43 @@ class LineLake(Lake):
 
     async def RemoveLine(self, accessToken, clientToken=None):
         LineResult = await self.QueryLine(accessToken, clientToken)
-        if LineResult.is_validated:
-            await self.SelectedCollection.delete_many({
-                "require": {
-                    "$elemMatch": {
-                        "$eq": LineResult.AccessToken
-                    }
+        await self.SelectedCollection.delete_many({
+            "require": {
+                "$elemMatch": {
+                    "$eq": LineResult.AccessToken
                 }
-            }) # 删除所有...
-            return None # 这里会直接返回None
+            }
+        }) # 删除所有...
+        return None # 这里会直接返回None
+        
 
     async def QueryAccountLines(self, AccountID):
         return [i for i in [await self.Prototype.createFromFormat(i) async for i in self.SelectedCollection.find({
             "bind.account": AccountID
         })]]# if not i.is_validated
 
-    async def ReflushLines(self, AccessToken, ClientToken=None, BindCharacter=NOne):
+    async def ReflushLines(self, AccessToken, ClientToken=None, BindCharacter: Optional[Character]=None):
         Line = self.QueryLine(AccessToken, ClientToken)
         if not Line:
             return
         if Line.is_validated:
             return
+
+        if BindCharacter: # check
+            if Line.Character and BindCharacter:
+                return "IllegalArgumentException"
+            BindCharacterObject = Character.CreateFromFormat((await self.SelectedDatabase[conf.config['connection']['mongo']['collections']['Character']].find_one({
+                "id": BindCharacter
+            })))
+            if not BindCharacterObject:
+                return "IllegalArgumentException"
+            if BindCharacterObject.Owner != Line.Account:
+                return "WrongBind"
+
         OriginalClientToken = Line.ClientToken
+        await self.RemoveLine(AccessToken, ClientToken) # remove the line.
+        NewLine = await self.Prototype.Create(Line.Account, ClientToken=OriginalClientToken)
+        if BindCharacter: # bind to new token.
+            NewLine.Character = BindCharacter.Id
+        await self.SaveObject(NewLine.format()) # save
+        return NewLine

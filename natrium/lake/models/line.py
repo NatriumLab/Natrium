@@ -9,6 +9,7 @@ import uuid
 from ..exceptions import PropertyException, NonExceptFollowingException, NonForkableException, TokenValidatedException 
 from natrium.util import randoms
 import datetime
+from .account import Account
 
 @dataclass(init=False, repr=True, eq=True)
 class Line(object):
@@ -107,7 +108,7 @@ class Line(object):
         return FactoryResult
 
     @classmethod
-    async def Create(cls, account, master=False, forkable=False, following=None, group=None):
+    async def Create(cls, account: Account, master=False, forkable=False, following=None, group=None, ClientToken=None):
         if master and following:
             raise NonExceptFollowingException("master branch cannot follow another line.")
 
@@ -117,11 +118,14 @@ class Line(object):
         FactoryResult = cls()
 
         FactoryResult.AccessToken = uuid.uuid4()
-        FactoryResult.ClientToken = uuid.uuid4()
+        if not ClientToken:
+            FactoryResult.ClientToken = uuid.uuid4()
+        else:
+            FactoryResult.ClientToken = ClientToken
         FactoryResult.is_master = master
         FactoryResult.parent = None
         FactoryResult._require = []
-        FactoryResult.Account=account
+        FactoryResult.Account=account.Id
         FactoryResult.ValidateDate = maya.now().add(**config['token']['validate']['maya-configure'])
         FactoryResult.AvailabilityDisableDate = maya.now().add(**config['token']['availability']['maya-configure'])
         FactoryResult.branch = "master" if master else following
@@ -183,3 +187,8 @@ class Line(object):
         FactoryResult.dangerous = message['metas']['able_to']['danger']
 
         return FactoryResult
+
+    def UpdateQueryMsg(self):
+        return {
+            "key.accessToken": self.AccessToken
+        }

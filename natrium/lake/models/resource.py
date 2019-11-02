@@ -30,6 +30,9 @@ class Resource(object):
 
     @classmethod
     async def Create(cls, Hash, Name, Owner: Account, IsPrivated=False):
+        if not re.match(verify.CharacterName, Name):
+            return
+
         FactoryResult = cls()
 
         FactoryResult.Id = uuid.uuid4()

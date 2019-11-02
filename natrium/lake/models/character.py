@@ -68,3 +68,8 @@ class Character(object):
         FactoryResult.CapeBinding = message['binding']['cape']
 
         return FactoryResult
+
+    def UpdateQueryMsg(self):
+        return {
+            "id": self.Id
+        }

@@ -25,7 +25,7 @@ class Account(object):
     async def Create(cls, Email, RawPass, Rank=enums.Classes.standard, Name=""):
         """实例化一个Account对象, 并自动生成各种信息
         """
-        if not re.match(verify.CharacterName, Name) and not re.match(verify.Email, Email):
+        if not re.match(verify.AccountName, Name) and not re.match(verify.Email, Email):
             return
         if not re.match(verify.Email, Email):
             return
@@ -72,3 +72,12 @@ class Account(object):
     async def PasswordVerify(self, raw):
         return bcrypt.hashpw(raw, self.Password.encode()) == self.Password
 
+    async def SetName(self, NewName):
+        if re.match(verify.AccountName, NewName):
+            self.Name = NewName
+
+    def UpdateQueryMsg(self):
+        return {
+            "id": self.Id,
+            "email": self.Email
+        }
