@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/home/chenweil/.local/share/virtualenvs/Natrium-hc1BI_pt/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.mypyEnabled": false,
+    "python.linting.enabled": true
+}

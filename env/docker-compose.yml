@@ -1,0 +1,15 @@
+# docker-compose.yml文件的版本
+version: "3"
+# 管理的服务
+services:
+  mongo:
+    image: mongo
+    volumes:
+      - "/run/mongo/:/data/"
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+    command: --dbpath /data/db --auth
+    privileged: true

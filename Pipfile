@@ -1,0 +1,27 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+verify_ssl = true
+
+[dev-packages]
+mypy = "*"
+
+[packages]
+fastapi = "*"
+aiosqlite = "*"
+email-validator = "*"
+uvicorn = "*"
+maya = "*"
+pyyaml = "*"
+mypy = "*"
+motor = "*"
+bcrypt = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
+
+[scripts]
+uvicorn = "uvicorn main:app --reload"
