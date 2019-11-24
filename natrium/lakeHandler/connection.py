@@ -1,7 +1,6 @@
 from conf import config
 from motor.motor_asyncio import AsyncIOMotorClient
 from ..util.inf import INFINITY
-import pymongo
 
 ConnectInfo = config['connection']['mongo']
 

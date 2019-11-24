@@ -1,6 +1,6 @@
 from typing import Optional, Any
 from ..util.pave import pave
-from pymongo import UpdateOne
+from pymongo import UpdateOne, InsertOne
 from ..util.objective_dict import BuiltinInterface
 
 def print_and_return(v):
@@ -40,17 +40,20 @@ class Struct:
                 raise ValueError(f'value "{value}" should be commitable in verify.')
             self.struct_dict[name] = value
 
-    def __init__(self, parent_lake, struct_dict, _id=None):
+    def __init__(self, parent_lake, struct_dict, _id=None, is_create=False):
         """
         需要传入lake实例(用于调用save和规范field)\n
         struct_dict是一个field的dict(key就是field name, value会给verify过一遍)\n
-        另外,因为我认为这里一般是在translate过程中汇聚键值,所以没!有!用!translate
-        另外,在lake的创建过程中,会阻止一些特殊的field_name(比如说builtin, 这个关键字被用于访问Struct的内部方法)
+        另外,因为我认为这里一般是在translate过程中汇聚键值,所以没!有!用!translate\n
+        在lake的创建过程中,会阻止一些特殊的field_name(比如说builtin, 这个关键字被用于访问Struct的内部方法)
         """
-        if _id:
+        if _id and not is_create:
             self.mongo_id = _id
         else:
-            self.mongo_id = struct_dict.get("_id")
+            if not is_create:
+                self.mongo_id = struct_dict.get("_id")
+            else:
+                self.mongo_id = None
         self.parent_lake = parent_lake
         self.struct_dict = {i.__name__: struct_dict.copy()[i.__name__] for i in parent_lake.fields.keys()}
         self.original_struct_dict = {i.__name__: struct_dict.copy()[i.__name__] for i in parent_lake.fields.keys()}
@@ -73,10 +76,15 @@ class Struct:
         structived = {
             i.__name__:self.struct_dict[i.__name__]
             for i in self.parent_lake.fields.keys()
-        }
+        } # 即只有lake里定义的字段的字典
         
         require_update = {
             k: v for k, v in pave(structived).items()
             if pave(self.original_struct_dict).get(k) != v
         }
-        return await self.parent_lake.bulk_write(UpdateOne({"_id": self.mongo_id}, require_update))
+        if self.mongo_id: # 表明这是一次更新动作
+            result = await self.parent_lake.bulk_write(UpdateOne({"_id": self.mongo_id}, require_update))
+        else: # 一次插入动作
+            result = await self.parent_lake.bulk_write(InsertOne(structived))
+            self.mongo_id = structived['_id']
+        return result
