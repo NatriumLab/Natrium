@@ -11,10 +11,26 @@ from ..util.misc import NonReturnCallable
 from .connection import AliveConnection, ConnectInfo
 from .field import Field
 from ..util.objective_dict import ObjectiveDict
+from .lake_struct import Struct
 
 class LakeMeta(type):
     def lake_create(self, **kwargs):
-        pass
+        result = {}
+        for i in self.fields.keys(): # 遍历字段
+            if i not in kwargs: # 判断一个是否在提供的参数中, 如果没有尝试取默认值:
+                if not isinstance(self.fields[i].default, NonReturnCallable) and self.fields[i].Optional:
+                    # 如果该字段没有default, 且Optional为True
+                    raise ValueError(f"{self.__name__}.{i}: The 'default' method is required when make 'field.optional' true.")
+                else:
+                    result[i] = self.fields[i].default() # 取默认值并放到result里
+            else:
+                # i在提供的参数里
+                if not self.fields[i].verify(kwargs[i]):
+                    # 提供的参数不合法
+                    raise ValueError(f'{self.__name__}.{i}: You have provided an illegal value: {kwargs[i]}, type: {type(kwargs[i])}')
+                # 提供的参数合法
+                result[i] = kwargs[i]
+        return Struct(self, result, is_create=True)
 
     async def bluk_write(self, requests):
         return await self.connection.collection.bluk_write(requests)
@@ -40,7 +56,10 @@ class LakeMeta(type):
                 if inspect.isclass(v) and not (k.startswith("__") and k.endswith("__")):
                     if Field not in v.__bases__:
                         raise TypeError("you should give a Field.")
-                    
+                    if not v.Optional:
+                        if not isinstance(v.default, NonReturnCallable):
+                            # 如果optional = false, 且没有重载default方法
+                            raise ValueError(f"{name}.{k}: The 'default' method is required when make 'field.optional' true.")
                     handled_map.fields[k] = v
 
         if inspect.isclass(mappings.get("indexes")):
