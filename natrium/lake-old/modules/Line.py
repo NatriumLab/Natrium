@@ -54,7 +54,7 @@ class LineLake(Lake):
         return None # 这里会直接返回None
         
 
-    async def QueryAccountLines(self, AccountID):
+    async def QueryAccountLines(self, AccountID) -> List[Line]:
         return [i for i in [await self.Prototype.createFromFormat(i) async for i in self.SelectedCollection.find({
             "bind.account": AccountID
         })]]# if not i.is_validated

@@ -68,26 +68,6 @@ class Line(object):
         if len(self._require) >= config['tree']['depth']:
             raise ValueError(f"{self.AccessToken} has forked {config['tree']['depth']}")
 
-        """return Line(
-            AccessToken=uuid.uuid4(),
-            ClientToken=self.ClientToken,
-
-            is_master=False,
-            parent=self.AccessToken,
-
-            require=self._require + [self.AccessToken],
-            Account=self.Account,
-
-            ValidateDate=maya.now().add(**config['token']['validate']['maya-configure']),
-            AvailabilityDisableDate=maya.now().add(**config['token']['availability']['maya-configure']),
-
-            branch=self.AccessToken,
-            commit_date=maya.now(),
-            commit_id=randoms.String(),
-
-            forkable=forkable,
-            disposable=disposable
-        )"""
         FactoryResult = self.__class__()
         FactoryResult.AccessToken = uuid.uuid4()
         FactoryResult.ClientToken = self.ClientToken

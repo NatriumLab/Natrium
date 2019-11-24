@@ -14,16 +14,10 @@ class Resource(object):
     Id: uuid.UUID
     Name: uuid.UUID
     Hash: str
-
     Owner: uuid.UUID
     CreationDate: maya.MayaDT
-
     Metadata: List[Dict] = [summon.ResourceMetadata.MCTexture()]
-
     IsPrivated: bool = False
-
-    def IsUsable(self, Account: Account):
-        return Account.Id == self.Owner or not self.IsPrivated
 
     def __init__(self, *args, **kwargs):
         pass
@@ -48,8 +42,10 @@ class Resource(object):
             "id": self.Id,
             "name": self.Name,
             "hash": self.Hash,
+            "meta": self.Metadata,
             "creationDate": self.CreationDate.datetime(),
-            "isPrivated": self.IsPrivated
+            "isPrivated": self.IsPrivated,
+            "owner": self.Owner
         }
 
     @classmethod
@@ -61,5 +57,10 @@ class Resource(object):
         FactoryResult.Hash = message['hash']
         FactoryResult.CreationDate = maya.MayaDT(message['creationDate'].timestamp())
         FactoryResult.IsPrivated = message['isPrivated']
+        FactoryResult.Metadata = message['meta']
+        FactoryResult.Owner = message['owner']
 
         return FactoryResult
+
+    def IsUsable(self, Account: Account):
+        return Account.Id == self.Owner or not self.IsPrivated

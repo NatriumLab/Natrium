@@ -8,6 +8,7 @@ from .exceptions import *
 from typing import Optional, Dict, List, Any
 from pymongo import IndexModel, DESCENDING, ASCENDING
 import asyncio
+from .register import REGISTER_DICT
 
 class Lake(object):
     Prototype: Any = None
@@ -16,6 +17,7 @@ class Lake(object):
     SelectedCollection: motor.motor_asyncio.AsyncIOMotorCollection
     Indexes = []
     CollectionName: str
+    RequireLake = []
 
     @classmethod
     async def Create(cls, MongodbConnection=None):
@@ -24,6 +26,9 @@ class Lake(object):
         """
 
         FactoryResult = cls()
+        if REGISTER_DICT.get(cls.CollectionName):
+            print("Lake重复了...这句以后再改,先别加载.")
+            return
 
         MongodbConnectionConf = conf.config['connection']['mongo']
         if not MongodbConnection:
@@ -40,6 +45,11 @@ class Lake(object):
                 sys.exit(1)
         else:
             FactoryResult.MongodbClient = MongodbConnection
+        for i in cls.RequireLake:
+            if i not in REGISTER_DICT.values():
+                print(f"{cls.__name__} 的Lake前置'{i}'没有加载...")
+                await i.Create(FactoryResult.MongodbClient)
+        REGISTER_DICT[cls.CollectionName] = FactoryResult
         return FactoryResult
 
     async def SelectDatabase(self, DatabaseName: str):
