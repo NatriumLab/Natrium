@@ -88,3 +88,9 @@ class Struct:
             result = await self.parent_lake.bulk_write(InsertOne(structived))
             self.mongo_id = structived['_id']
         return result
+
+    async def delete(self):
+        if self.mongo_id:
+            return await self.parent_lake.connection.collection.find_one_and_delete({"_id": self.mongo_id})
+        else:
+            return await self.parent_lake.connection.collection.find_one_and_delete(self.struct_dict)
