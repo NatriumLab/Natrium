@@ -14,7 +14,7 @@ from ..util.objective_dict import ObjectiveDict
 from .lake_struct import Struct
 
 class LakeMeta(type):
-    def lake_create(self, **kwargs):
+    def create(self, **kwargs):
         result = {}
         for i in self.fields.keys(): # 遍历字段
             if i not in kwargs: # 判断一个是否在提供的参数中, 如果没有尝试取默认值:
@@ -32,6 +32,14 @@ class LakeMeta(type):
                 result[i] = kwargs[i]
         return Struct(self, result, is_create=True)
 
+    async def query(self, find_count, **kwargs):
+        for i in kwargs.keys():
+            if i not in self.fields:
+                raise KeyError(f"{i} has not registered.")
+
+        find_result = await (await self.connection.collection.find(kwargs)).to_list(find_count)
+        return [Struct(self, i) for i in find_result]
+
     async def bluk_write(self, requests):
         return await self.connection.collection.bluk_write(requests)
 
@@ -47,6 +55,7 @@ class LakeMeta(type):
                 "collection": None
             }),
 
+            "create": classmethod(cls.create),
             "bluk_write": classmethod(cls.bluk_write),
             "__getitem__": classmethod(lambda self, name: self.fields[name]),
             "__name__": name
