@@ -9,7 +9,7 @@ class BuiltinInterface:
 
 class ObjectiveDict(dict):
     def __getattr__(self, name: str):
-        if name == "builtin":
+        if name == "__builtin__":
             return BuiltinInterface(self)
 
         if (not (name.startswith("__") and name.endswith("__"))):

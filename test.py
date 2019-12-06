@@ -1,17 +1,7 @@
-from pymongo import MongoClient, InsertOne
-from conf import config
+import natrium.lakeHandler as lh
+import asyncio
 
-ConnectInfo = config['connection']['mongo']
+async def main():
+    print(await lh.test.create().save())
 
-AliveConnection = MongoClient(
-    host=ConnectInfo['host'],
-    port=ConnectInfo['port'],
-    username=ConnectInfo['auth']['username'],
-    password=ConnectInfo['auth']['password'],
-
-    connect=True
-)
-faq = {'y': 1}
-
-print(AliveConnection['natrium']['cc'].bulk_write([InsertOne(faq)]).upserted_ids)
-print(faq)
+asyncio.run(main())
