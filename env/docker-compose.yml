@@ -2,14 +2,14 @@
 version: "3"
 # 管理的服务
 services:
-  mongo:
-    image: mongo
-    volumes:
-      - "/run/mongo/:/data/"
-    ports:
-      - "27017:27017"
+  mysql:
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
-    command: --dbpath /data/db --auth
-    privileged: true
+        MYSQL_USER: 'root'
+        MYSQL_ROOT_PASSWORD: 'eogbperqwdm'
+    image: "mysql:5.7"
+    volumes:
+        - "./mysql/db:/var/lib/mysql"
+        - "./mysql/conf/my.cnf:/etc/my.cnf"
+        - "./mysql/init:/docker-entrypoint-initdb.d/"
+    ports:
+      - "3306:3306"
