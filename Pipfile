@@ -16,6 +16,8 @@ pyyaml = "*"
 bcrypt = "*"
 pony = "*"
 cacheout = "*"
+rsa = "*"
+pycryptodome = "*"
 
 [requires]
 python_version = "3.7"
@@ -24,4 +26,4 @@ python_version = "3.7"
 allow_prereleases = true
 
 [scripts]
-uvicorn = "uvicorn main:app --reload"
+uvicorn = "uvicorn main:app --reload --port 8080"
