@@ -1,3 +1,5 @@
+import operator
+
 INFINITY = type("Infinity", (), {
     "__gt__": classmethod(lambda self, value: value != self), # 大于
     "__ge__": classmethod(lambda self, value: True), # 大于等于

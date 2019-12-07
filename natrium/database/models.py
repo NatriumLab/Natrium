@@ -9,7 +9,7 @@ import json
 import base64
 
 class Resource(db.Entity):
-    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4, auto=True)
     PicHash = orm.Required(orm.LongStr)
     Name = orm.Required(str, py_check=lambda value: \
         isinstance(value, str) and\
@@ -27,11 +27,12 @@ class Resource(db.Entity):
     UsedforElytra = orm.Set("Character", reverse='Elytra', lazy=True)
 
 class Account(db.Entity):
-    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4, auto=True)
     Email = orm.Required(str, py_check=lambda value: \
         isinstance(value, str) and\
         bool(re.match(r"^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?$", value)) and\
-        len(value) <= 40
+        len(value) <= 40,
+        unique=True
     )
     AccountName = orm.Required(str, py_check=lambda value: \
         isinstance(value, str) and\
@@ -46,7 +47,7 @@ class Account(db.Entity):
     Permission = orm.Required(str, default="Normal", py_check=lambda value: value in ['Normal', 'Manager'])
 
 class Character(db.Entity):
-    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4, auto=True)
     PlayerId = orm.Required(uuid.UUID, unique=True, index=True)
     PlayerName = orm.Required(str, unique=True, py_check=lambda value: bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_\-]*$", value)))
     Owner = orm.Required(Account)
@@ -63,7 +64,7 @@ class Character(db.Entity):
             metadata = self.Skin.Model == "alex"
         result = {
             "timestamp": self.CreatedAt.timestamp(),
-            "profileId": self.Id,
+            "profileId": self.Id.hex,
             "profileName": self.PlayerName,
             "textures": {}
         }
@@ -99,6 +100,7 @@ class Character(db.Entity):
             "name": self.PlayerName
         }
         if Properties:
+            print(self.FormatResources(metadata=metadata))
             textures = json.dumps(self.FormatResources(metadata=metadata))
             result['properties'] = [
                 {
