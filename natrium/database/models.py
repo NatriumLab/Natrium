@@ -9,7 +9,7 @@ import json
 import base64
 
 class Resource(db.Entity):
-    Id = orm.Required(uuid.UUID, default=uuid.uuid4, unique=True, index=True)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
     PicHash = orm.Required(orm.LongStr)
     Name = orm.Required(str, py_check=lambda value: \
         isinstance(value, str) and\
@@ -18,12 +18,16 @@ class Resource(db.Entity):
     )
     PicHeight = orm.Required(int, py_check=lambda value: not bool(value % 16))
     PicWidth = orm.Required(int, py_check=lambda value: not bool(value % 16))
-    Model = orm.Required(str, py_check=lambda i: i in ['steve', 'alex'], null=True)
+    Model = orm.Optional(str, py_check=lambda i: i in ['steve', 'alex'], default="steve")
     Type = orm.Required(str, py_check=lambda i: i in ['skin', 'cape', 'elytra'])
     CreatedAt = orm.Required(datetime, default=datetime.now)
+    Owner = orm.Required(lambda: Account)
+    UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
+    UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
+    UsedforElytra = orm.Set("Character", reverse='Elytra', lazy=True)
 
 class Account(db.Entity):
-    Id = orm.Required(uuid.UUID, default=uuid.uuid4, unique=True, index=True)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
     Email = orm.Required(str, py_check=lambda value: \
         isinstance(value, str) and\
         bool(re.match(r"^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?$", value)) and\
@@ -37,29 +41,26 @@ class Account(db.Entity):
     Avatar = orm.Optional(Resource, py_check=lambda value: value.type == "skin")
     Password = orm.Required(orm.LongStr)
     CreatedAt = orm.Required(datetime, default=datetime.now)
+    Characters = orm.Set("Character", reverse="Owner", lazy=True)
 
     Permission = orm.Required(str, default="Normal", py_check=lambda value: value in ['Normal', 'Manager'])
 
 class Character(db.Entity):
-    Id = orm.Required(uuid.UUID, default=uuid.uuid4, unique=True, index=True)
+    Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4)
     PlayerId = orm.Required(uuid.UUID, unique=True, index=True)
     PlayerName = orm.Required(str, unique=True, py_check=lambda value: bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_\-]*$", value)))
     Owner = orm.Required(Account)
 
-    Skin = orm.Required(Resource, py_check=lambda value: value.type == "skin", null=True)
-    Cape = orm.Required(Resource, py_check=lambda value: value.type == "cape", null=True)
-    Elytra = orm.Required(Resource, py_check=lambda value: value.type == "elytra", null=True)
+    Skin = orm.Optional(Resource, py_check=lambda value: value.type == "skin")
+    Cape = orm.Optional(Resource, py_check=lambda value: value.type == "cape")
+    Elytra = orm.Optional(Resource, py_check=lambda value: value.type == "elytra")
 
     CreatedAt = orm.Required(datetime, default=datetime.now)
     UpdatedAt = orm.Required(datetime, default=datetime.now)
 
     def FormatResources(self, metadata=True, auto=False, url=config['hosturl'].rstrip("/")):
-        if auto: # 是否依据资源模型自动生成metadata(model==alex)
-            if self.Skin:
-                if self.Skin.Model == "alex":
-                    metadata = True
-                else:
-                    metadata = False
+        if auto and self.Skin: # 是否依据资源模型自动生成metadata(model==alex)
+            metadata = self.Skin.Model == "alex"
         result = {
             "timestamp": self.CreatedAt.timestamp(),
             "profileId": self.Id,
@@ -78,11 +79,11 @@ class Character(db.Entity):
                 }
         if self.Cape:
             result['textures'].update({
-                'cape': {
+                'cape': { 
                     "url": f"{url}{config['static-resource-path'].format(hash=self.Cape.PicHash)}",
                 }
             })
-        if self.Elytra:
+        if self.Elytra: # 大部分时候大家都不处理这个, 但是考虑到兼容性和可维护性, 还是整上.
             result['textures'].update({
                 "elytra": {
                     "url": f"{url}{config['static-resource-path'].format(hash=self.Elytra.PicHash)}",
@@ -91,12 +92,8 @@ class Character(db.Entity):
         return result
 
     def FormatCharacter(self, unsigned=False, Properties=False, metadata=True, auto=False):
-        if auto: # 是否依据资源模型自动生成metadata(model==alex)
-            if self.Skin:
-                if self.Skin.Model == "alex":
-                    metadata = True
-                else:
-                    metadata = False
+        if auto and self.Skin: # 是否依据资源模型自动生成metadata(model==alex)
+            metadata = self.Skin.Model == "alex"
         result = {
             "id": self.PlayerId.hex,
             "name": self.PlayerName

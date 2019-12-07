@@ -1,7 +1,4 @@
-import natrium.lakeHandler as lh
-import asyncio
+import natrium.database.models as M
+from natrium.database.connection import db
 
-async def main():
-    print(await lh.test.create().save())
-
-asyncio.run(main())
+db.generate_mapping(create_tables=True)

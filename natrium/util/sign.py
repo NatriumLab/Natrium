@@ -16,20 +16,20 @@ def __install__(key):
     if not PrivateKeyFile.exists():
         PrivateKey = RSA.generate(4096)
         PublicKey = PrivateKey.publickey()
-        PrivateKeyFile.write_text(PrivateKey.exportKey(), 'utf-8')
-        PublicKeyFile.write_text(PublicKey.exportKey())
+        PrivateKeyFile.write_text(PrivateKey.exportKey().decode("utf-8"), 'utf-8')
+        PublicKeyFile.write_text(PublicKey.exportKey().decode("utf-8"))
     else:
         PrivateKey = RSA.importKey(PrivateKeyFile.read_text('utf-8'))
         if not PublicKeyFile.exists():
             PublicKey = PrivateKey.publickey()
-            PublicKeyFile.write_text(PublicKey.exportKey(), 'utf-8')
+            PublicKeyFile.write_text(PublicKey.exportKey().decode("utf-8"), 'utf-8')
         else:
             PublicKey = RSA.importKey(PublicKeyFile.read_text('utf-8'))
     key.update({
         "private": PrivateKey,
         "public": PublicKey,
-        "__private_text": PrivateKey.exportKey(),
-        "__public_text": PublicKey.exportKey()
+        "__private_text": PrivateKey.exportKey().decode("utf-8"),
+        "__public_text": PublicKey.exportKey().decode("utf-8")
     })
 
 def Signature(data: str):

@@ -8,7 +8,6 @@ pylint = "*"
 
 [packages]
 fastapi = "*"
-aiosqlite = "*"
 email-validator = "*"
 uvicorn = "*"
 maya = "*"
@@ -16,8 +15,8 @@ pyyaml = "*"
 bcrypt = "*"
 pony = "*"
 cacheout = "*"
-rsa = "*"
 pycryptodome = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.7"
