@@ -4,6 +4,9 @@ import uuid
 from datetime import datetime
 import re
 from conf import config
+from ..util.sign import Signature
+import json
+import base64
 
 class Resource(db.Entity):
     Id = orm.Required(uuid.UUID, default=uuid.uuid4, unique=True, index=True)
@@ -87,5 +90,26 @@ class Character(db.Entity):
             })
         return result
 
-    def FormatCharacter(self, unsigned=False, Properties=False, metadata=True):
-        
+    def FormatCharacter(self, unsigned=False, Properties=False, metadata=True, auto=False):
+        if auto: # 是否依据资源模型自动生成metadata(model==alex)
+            if self.Skin:
+                if self.Skin.Model == "alex":
+                    metadata = True
+                else:
+                    metadata = False
+        result = {
+            "id": self.PlayerId.hex,
+            "name": self.PlayerName
+        }
+        if Properties:
+            textures = json.dumps(self.FormatResources(metadata=metadata))
+            result['properties'] = [
+                {
+                    "name": 'textures',
+                    "value": base64.b64encode(textures.encode("utf-8")).decode("utf-8")
+                }
+            ]
+            if not unsigned:
+                for i in range(len(result['properties'])):
+                    result['properties'][i]['signature'] = Signature(result['properties'][i]['value'])
+        return result
