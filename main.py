@@ -16,5 +16,4 @@ r.set("5", "5", date=maya.now()+4)
 
 @app.get("/natrium/hello_world")
 async def helloworld():
-    print(r.Body)
-    return r.Body
+    return r.get(1)

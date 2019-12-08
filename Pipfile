@@ -17,6 +17,7 @@ pony = "*"
 cacheout = "*"
 pycryptodome = "*"
 pymysql = "*"
+blinker = "*"
 
 [requires]
 python_version = "3.7"
