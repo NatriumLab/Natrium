@@ -11,6 +11,8 @@ import signal
 import sys
 import blinker
 from .randoms import String
+import math
+import time
 
 class AioExpireDB():
     """通过threading.Thread运行独立的事件循环来保证其他协程的持续运行.\n
@@ -37,23 +39,28 @@ class AioExpireDB():
     async def scavenger(self):
         while not self._ExitSignal:
             await asyncio.sleep(1)
-            if len(self.Expire_Datas) == 0:
+            #print(len(self.Body), end=" ")
+            #sys.stdout.flush()
+            
+            data_num = len(self.getlib())
+            if data_num == 0:
                 continue
-            original_keys = list(self.Expire_Datas.keys())
-
-            result = random.choices(range(len(self.Expire_Datas)), k=16)
-            result = reduce(lambda x, y:x if y in x else x + [y], [[], ] + result)
-            # 特殊的按顺序去重
-            if result:
-                with self.lock:
-                    for i in result:
-                        if self.isExpired(original_keys[i]):
-                            del self.Expire_Datas[original_keys[i]]
-                            del self.Body[original_keys[i]]
+            original_keys = list(self.getlib().keys())
+            with self.lock:
+                result = random.choices(range(len(self.Expire_Datas)), k=math.ceil(data_num / 20))
+                result = reduce(lambda x, y:x if y in x else x + [y], [[], ] + result)
+                # 特殊的按顺序去重
+                if result:
+                    print(String(), data_num, [i for i in result if i > data_num])
+                    for i in [i for i in result if i < data_num]:
+                        key = original_keys[i]
+                        if self.isExpired(key):
+                            self.delete(key)
 
     def delete(self, key):
-        del self.Expire_Datas[key]
-        del self.Body[key]
+        with self.lock:
+            del self.Expire_Datas[key]
+            del self.Body[key]
 
     def get(self, key, default=None):
         try:
@@ -71,6 +78,10 @@ class AioExpireDB():
             raise KeyError(item)
         return result
 
+    def getlib(self):
+        with self.lock:
+            return self.Body.copy()
+
     def __setitem__(self, item, value):
         self.set(item, value)
     
@@ -78,8 +89,10 @@ class AioExpireDB():
         self.delete(item)
 
     def set(self, key, value, date=INFINITY):
-        self.Body[key] = value
-        self.Expire_Datas[key] = {"date": date}
+        """可指定日期, 到时key无效."""
+        with self.lock:
+            self.Body[key] = value
+            self.Expire_Datas[key] = {"date": date}
 
     def keys(self):
         return self.Body.keys()
@@ -95,7 +108,8 @@ class AioExpireDB():
         self.local_loop = asyncio.new_event_loop()
         def loop_runfunc(loop, coro):
             asyncio.set_event_loop(loop)
-            loop.run_until_complete(coro)
+            print(loop.run_until_complete(coro))
+
         self.scavenger_thread = Thread(target=loop_runfunc,args=(self.local_loop, self.scavenger()))
         self.scavenger_thread.start()
         self.lock = threading.RLock()
