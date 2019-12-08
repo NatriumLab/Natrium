@@ -2,6 +2,7 @@ env/.env
 env/mongo
 env/redis
 env/mysql
+env/postgres
 
 __pycache__
 *.py[cod]
@@ -10,5 +11,6 @@ __pycache__
 .mypy_cache
 
 config.yaml
-assets/keys/*
+assets/keys/*.pem
+assets/resources/*.png
 test.py

@@ -18,10 +18,11 @@ class Resource(db.Entity):
     )
     PicHeight = orm.Required(int, py_check=lambda value: not bool(value % 16))
     PicWidth = orm.Required(int, py_check=lambda value: not bool(value % 16))
-    Model = orm.Optional(str, py_check=lambda i: i in ['steve', 'alex'], default="steve")
+    Model = orm.Optional(str, py_check=lambda i: i in ['steve', 'alex', 'none'], default="steve")
     Type = orm.Required(str, py_check=lambda i: i in ['skin', 'cape', 'elytra'])
     CreatedAt = orm.Required(datetime, default=datetime.now)
     Owner = orm.Required(lambda: Account)
+    IsPrivate = orm.Required(bool, default=False)
     UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
     UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
     UsedforElytra = orm.Set("Character", reverse='Elytra', lazy=True)
@@ -39,8 +40,10 @@ class Account(db.Entity):
         bool(re.match(r"^[a-zA-Z\u4e00-\u9fa5][a-zA-Z\u4e00-\u9fa5_\-0-9]*$", value)) and\
         len(value) <= 40
     )
-    Avatar = orm.Optional(Resource, py_check=lambda value: value.type == "skin")
-    Password = orm.Required(orm.LongStr)
+    #Avatar = orm.Optional(Resource, py_check=lambda value: value.Type == "skin")
+    OwnedResources = orm.Set(Resource, reverse="Owner", lazy=True)
+    Password = orm.Required(bytes)
+    Salt = orm.Required(bytes)
     CreatedAt = orm.Required(datetime, default=datetime.now)
     Characters = orm.Set("Character", reverse="Owner", lazy=True)
 
@@ -48,13 +51,13 @@ class Account(db.Entity):
 
 class Character(db.Entity):
     Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4, auto=True)
-    PlayerId = orm.Required(uuid.UUID, unique=True, index=True)
-    PlayerName = orm.Required(str, unique=True, py_check=lambda value: bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_\-]*$", value)))
+    PlayerId = orm.Required(uuid.UUID, index=True)
+    PlayerName = orm.Required(str, py_check=lambda value: bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_\-]*$", value)))
     Owner = orm.Required(Account)
 
-    Skin = orm.Optional(Resource, py_check=lambda value: value.type == "skin")
-    Cape = orm.Optional(Resource, py_check=lambda value: value.type == "cape")
-    Elytra = orm.Optional(Resource, py_check=lambda value: value.type == "elytra")
+    Skin = orm.Optional(Resource, py_check=lambda value: value.Type == "skin")
+    Cape = orm.Optional(Resource, py_check=lambda value: value.Type == "cape")
+    Elytra = orm.Optional(Resource, py_check=lambda value: value.Type == "elytra")
 
     CreatedAt = orm.Required(datetime, default=datetime.now)
     UpdatedAt = orm.Required(datetime, default=datetime.now)

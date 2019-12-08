@@ -17,4 +17,4 @@ for _ in range(1, 100):
 @app.get("/natrium/hello_world")
 async def helloworld():
     r.set(uuid.uuid4(), uuid.uuid4(), date=maya.now()+5)
-    return {1:1}
+    return {"count": 1}

@@ -2,14 +2,15 @@
 version: "3"
 # 管理的服务
 services:
-  mysql:
-    environment:
-        MYSQL_USER: 'root'
-        MYSQL_ROOT_PASSWORD: 'eogbperqwdm'
-    image: "mysql:5.7"
+  mydb:
+    image: postgres:11
     volumes:
-        - "./mysql/db:/var/lib/mysql"
-        - "./mysql/conf/my.cnf:/etc/my.cnf"
-        - "./mysql/init:/docker-entrypoint-initdb.d/"
+      - ./postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_DB: natrium
+      POSTGRES_PASSWORD: eogbperqwdm
     ports:
-      - "3306:3306"
+      - "5432:5432"
+    restart:
+      always

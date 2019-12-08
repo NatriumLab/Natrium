@@ -13,6 +13,7 @@ import blinker
 from .randoms import String
 import math
 import time
+import datetime
 
 class AioExpireDB():
     """通过threading.Thread运行独立的事件循环来保证其他协程的持续运行.\n
@@ -35,6 +36,8 @@ class AioExpireDB():
 
     def event_shutdown_listener(self):
         self._ExitSignal = True
+        self.Body.clear()
+        self.Expire_Datas.clear()
 
     async def scavenger(self):
         while not self._ExitSignal:
@@ -51,11 +54,19 @@ class AioExpireDB():
                 result = reduce(lambda x, y:x if y in x else x + [y], [[], ] + result)
                 # 特殊的按顺序去重
                 if result:
-                    print(String(), data_num, [i for i in result if i > data_num])
+                    print(data_num, [i for i in result if i > data_num])
                     for i in [i for i in result if i < data_num]:
                         key = original_keys[i]
                         if self.isExpired(key):
                             self.delete(key)
+
+    def count(self):
+        with self.lock:
+            return len(self.Body)
+
+    def count_expire_datas(self):
+        with self.lock:
+            return len(self.Expire_Datas)
 
     def delete(self, key):
         with self.lock:
@@ -93,6 +104,16 @@ class AioExpireDB():
         with self.lock:
             self.Body[key] = value
             self.Expire_Datas[key] = {"date": date}
+
+    def setByTimedelta(self, key, value, delta={}):
+        """通过timedelta实现日期偏移计算
+        """
+        with self.lock:
+            offset = datetime.timedelta(**delta)
+            if offset.total_seconds() == 0:
+                self.set(key, value)
+            else:
+                self.set(key, value, maya.now() + offset)
 
     def keys(self):
         return self.Body.keys()
