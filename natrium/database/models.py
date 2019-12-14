@@ -67,35 +67,35 @@ class Character(db.Entity):
             metadata = self.Skin.Model == "alex"
         result = {
             "timestamp": self.CreatedAt.timestamp(),
-            "profileId": self.Id.hex,
+            "profileId": self.PlayerId.hex,
             "profileName": self.PlayerName,
             "textures": {}
         }
         if self.Skin:
             result['textures'].update({
-                'skin': {
-                    "url": f"{url}{config['static-resource-path'].format(hash=self.Skin.PicHash)}",
+                'SKIN': {
+                    "url": f"{url}{config['resource-static-path'].format(hash=self.Skin.PicHash)}",
                 }
             })
             if metadata:
-                result['textures']['skin']['metadata'] = {
+                result['textures']['SKIN']['metadata'] = {
                     "model": {"steve": "default", "alex": "slim"}[self.Skin.Model]
                 }
         if self.Cape:
             result['textures'].update({
-                'cape': { 
-                    "url": f"{url}{config['static-resource-path'].format(hash=self.Cape.PicHash)}",
+                'CAPE': { 
+                    "url": f"{url}{config['resource-static-path'].format(hash=self.Cape.PicHash)}",
                 }
             })
         if self.Elytra: # 大部分时候大家都不处理这个, 但是考虑到兼容性和可维护性, 还是整上.
             result['textures'].update({
-                "elytra": {
-                    "url": f"{url}{config['static-resource-path'].format(hash=self.Elytra.PicHash)}",
+                "ELYTRA": {
+                    "url": f"{url}/{config['resource-static-path'].format(hash=self.Elytra.PicHash)}",
                 }
             })
         return result
 
-    def FormatCharacter(self, unsigned=False, Properties=False, metadata=True, auto=False):
+    def FormatCharacter(self, unsigned=False, Properties=False, metadata=True, auto=False, url=config['hosturl'].rstrip("/")):
         if auto and self.Skin: # 是否依据资源模型自动生成metadata(model==alex)
             metadata = self.Skin.Model == "alex"
         result = {
@@ -103,8 +103,8 @@ class Character(db.Entity):
             "name": self.PlayerName
         }
         if Properties:
-            print(self.FormatResources(metadata=metadata))
-            textures = json.dumps(self.FormatResources(metadata=metadata))
+            #print(self.FormatResources(metadata=metadata))
+            textures = json.dumps(self.FormatResources(metadata=metadata, url=url))
             result['properties'] = [
                 {
                     "name": 'textures',

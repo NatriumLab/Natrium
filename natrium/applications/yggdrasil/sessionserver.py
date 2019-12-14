@@ -1,0 +1,67 @@
+from natrium.applications.yggdrasil import router
+from conf import config
+from starlette.responses import JSONResponse as Response
+from starlette.requests import Request
+from urllib.parse import parse_qs, urlencode, urlparse
+from natrium.util.sign import key
+from functools import reduce
+from natrium.database.models import Character, Account, Resource
+from natrium.database.connection import db
+from pony import orm
+from .utils import error_handle
+from natrium.applications.yggdrasil import exceptions, sessionserver_join
+from natrium.applications.yggdrasil.models import Token
+import uuid
+
+@router.post("/sessionserver/session/minecraft/join")
+async def session_minecraft_join(request: Request):
+    data = await request.json()
+    token = Token.getToken(data.get("accessToken"))
+    if not token:
+        print("1")
+        return error_handle(exceptions.InvalidToken())
+    if not token.is_alived:
+        print("2")
+        return error_handle(exceptions.InvalidToken())
+    if not token.Character:
+        print("3")
+        return error_handle(exceptions.InvalidToken())
+    with orm.db_session:
+        result = orm.select(i for i in Character if i.Id == token.Character.Id)
+        if not result.exists():
+            print("4")
+            return error_handle(exceptions.InvalidToken())
+        result: Character = result.first()
+        if data.get("selectedProfile") != result.PlayerId.hex:
+            return error_handle(exceptions.InvalidToken())
+        sessionserver_join.setByTimedelta(data.get("serverId"), {
+            "token": token,
+            "character": result.FormatCharacter(Properties=True, auto=True),
+            "remoteIp": request.client
+        })
+    return Response(status_code=204)
+
+@router.get("/sessionserver/session/minecraft/hasJoined")
+async def session_minecraft_hasJoined(username, serverId, ip=None):
+    info = sessionserver_join.get(serverId)
+    if not info:
+        return Response(status_code=204)
+    if all([
+        username == info['character']['name'],
+        ip == info['remoteIp'] if ip else True
+    ]):
+            return info['character']
+    else:
+        return Response(status_code=204)
+
+@router.get("/sessionserver/session/minecraft/profile/{profile}")
+async def session_minecraft_query_profiles(request: Request, profile: uuid.UUID, unsigned: bool=True):
+    with orm.db_session:
+        char = orm.select(i for i in Character if i.PlayerId == profile)
+        if not char.exists():
+            return Response(status_code=204)
+        char: Character = char.first()
+        return char.FormatCharacter(
+            unsigned=unsigned, Properties=True, auto=True,
+            url=f"{request.url.scheme}://{request.url.netloc}"
+        )
