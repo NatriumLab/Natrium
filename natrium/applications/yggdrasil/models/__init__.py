@@ -10,14 +10,11 @@ class Token(object):
 
     ValidateDate = None
     AvailabilityDisableDate = None
-    Group = None
-
-    Dangerous = False
 
     AccessToken = None
     ClientToken = None
 
-    def __init__(self, Account, Danger=False, Character=None, ClientToken=None, Group=None):
+    def __init__(self, Account, Character=None, ClientToken=None,):
         self.AccessToken = uuid.uuid4()
         if ClientToken:
             self.ClientToken = ClientToken
@@ -25,10 +22,7 @@ class Token(object):
             self.ClientToken = uuid.uuid4().hex
 
         self.Account = Account
-        self.Group = Group
         self.Character = Character
-
-        self.Dangerous = Danger
 
         self.ValidateDate = maya.now().add(**config['token']['validate']['maya-configure'])
         self.AvailabilityDisableDate = maya.now().add(**config['token']['availability']['maya-configure'])

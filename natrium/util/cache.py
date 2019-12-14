@@ -153,7 +153,6 @@ class AioMultiCacheBucket:
     ScavengerThread = None
 
     def event_shutdown_listener(self):
-        print("?!")
         self.ScavengerExitSignal = True
         self.LocalLoop.stop()
 

@@ -30,7 +30,6 @@ user_auth_cooldown_bucket = cache_pool.getBucket("yggdrasil.authserver.user.veri
 auth_token_pool = cache_pool.getBucket("yggdrasil.authserver.authenticate.token_pool")
 sessionserver_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
 
-
 router = APIRouter()
 db.generate_mapping()
 
