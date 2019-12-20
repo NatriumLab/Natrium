@@ -19,9 +19,6 @@ blinker = "*"
 psycopg2 = "*"
 aiofiles = "*"
 
-[requires]
-python_version = "3.7"
-
 [pipenv]
 allow_prereleases = true
 

@@ -2,11 +2,11 @@ from natrium import cache_pool
 from conf import config
 from natrium.util.objective_dict import ObjectiveDict
 
-Config = ObjectiveDict(config)
+Config = ObjectiveDict(config).natrium
 
 cache_pool.setup({
     "natrium.tokens": {
-        "default_expire_delta": Config.natrium.token_expire
+        "default_expire_delta": Config["token"]["expire"]
     }, # 令牌
     "natrium.authenticate.verify.locks": { 
         "default_expire_delta": {

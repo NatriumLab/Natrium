@@ -211,11 +211,12 @@ class AioMultiCacheBucket:
             self.Buckets[key] = AioCacheBucket(self.RequireApp, **result, scavenger=False, lock=self.BucketsLocks[key], listen_shutdown=False)
         
         # 构建清道夫
-        def loop_runfunc(loop, tasks):
+        def loop_runfunc(loop: asyncio.AbstractEventLoop, tasks):
             asyncio.set_event_loop(loop)
             async def run_coro():
                 return await asyncio.wait(sum(tasks, []), loop=loop)
-            loop.run_until_complete(run_coro())
+            loop.create_task(run_coro())
+            loop.run_forever()
         
         self.ScavengerThread = Thread(target=loop_runfunc, args=(self.LocalLoop, [
             [self.scavenger_producer() for i in range(3)]

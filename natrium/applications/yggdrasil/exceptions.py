@@ -7,6 +7,12 @@ class BaseException(Exception):
             self.code = code
         super().__init__(message)
 
+    def json(self):
+        return {
+            "error": self.error,
+            "errorMessage": self.message
+        }
+
 class InvalidRequestData(BaseException):
     NoAnyMoreConfiure = True
     error = "ForbiddenOperationException"

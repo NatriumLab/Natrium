@@ -5,11 +5,8 @@ from natrium.util.randoms import String
 import maya
 import random
 import uuid
+from natrium import app
 
-app = FastAPI(title="Natrium", openapi_prefix="/openapi/")
-from natrium import app as NatriumSubApp
-
-app.mount("/", NatriumSubApp)
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app)
+    uvicorn.run("main:app", port=8080, reload=True)
