@@ -1,10 +1,12 @@
 {
-    "python.pythonPath": "/home/chenweil/.local/share/virtualenvs/Natrium-hc1BI_pt/bin/python",
-    "python.linting.pylintEnabled": false,
+    "python.pythonPath": "C:\\Users\\18469\\.virtualenvs\\Natrium-Zd6m7ybj\\Scripts\\python.exe",
+    "python.linting.pylintEnabled": true,
     "python.linting.mypyEnabled": false,
     "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Enabled": false,
     "python.linting.flake8Args": [
         "--extend-ignore=E231,E203,E117,E302,E225,E228,W291,E305,W191,W292,W391,E301,E501,W293,F401,E261,E122,E402,E306,E265,E502,E128,E124"
-    ]
+    ],
+    "python.formatting.provider": "yapf",
+    "python.linting.pylamaEnabled": false
 }

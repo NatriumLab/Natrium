@@ -1,6 +1,6 @@
 [[source]]
 name = "pypi"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+url = "https://mirrors.aliyun.com/pypi/simple/"
 verify_ssl = true
 
 [dev-packages]
@@ -18,9 +18,11 @@ pycryptodome = "*"
 blinker = "*"
 psycopg2 = "*"
 aiofiles = "*"
+httptools = "*"
 
 [pipenv]
 allow_prereleases = true
 
 [scripts]
 uvicorn = "uvicorn main:app --port 8080"
+main = "python main.py"

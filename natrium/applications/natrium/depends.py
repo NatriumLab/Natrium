@@ -5,7 +5,7 @@ from .buckets import TokenBucket
 from .token import Token 
 from .exceptions import AuthenticateVerifyException
 
-async def TokenVerify(Authenticate: AInfo):
+async def TokenVerify(Authenticate: AInfo) -> Token:
     token = Token.getToken(
         Authenticate.auth.accessToken,
         ClientToken=Authenticate.auth.clientToken

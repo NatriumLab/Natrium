@@ -26,9 +26,9 @@ cache_pool.setup({
         }
     }
 })
-user_auth_cooldown_bucket = cache_pool.getBucket("yggdrasil.authserver.user.verify.cooldown")
+user_auth_cooling_bucket = cache_pool.getBucket("yggdrasil.authserver.user.verify.cooldown")
 auth_token_pool = cache_pool.getBucket("yggdrasil.authserver.authenticate.token_pool")
-sessionserver_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
+session_server_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
 
 router = APIRouter()
 db.generate_mapping()
@@ -45,13 +45,16 @@ async def yggdrasil_index(request: Request):
         "signaturePublickey": key['public'].export_key().decode()
     })
 
+
 @router.post("/api/profiles/minecraft")
 async def yggdrasil_profiles_query(request: Request):
     data = await request.json()
-    data = reduce(lambda x, y:x if y in x else x + [y], [[], ] + data)
+    data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)
     with orm.db_session:
-        result = [i.FormatCharacter(unsigned=True) for i in list(orm.select(i for i in Character if i.PlayerName in data[0:config['meta']['ProfilesQueryLimit'] - 1]))]
+        result = [i.FormatCharacter(unsigned=True) for i in list(
+            orm.select(i for i in Character if i.PlayerName in data[0:config['meta']['ProfilesQueryLimit'] - 1]))]
     return result
+
 
 # 子模块
 import natrium.applications.yggdrasil.authserver
