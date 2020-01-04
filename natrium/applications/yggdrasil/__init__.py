@@ -14,7 +14,7 @@ from natrium import cache_pool
 cache_pool.setup({
     "yggdrasil.authserver.user.verify.cooldown": {
         "default_expire_delta": {
-            "seconds": 0.3
+            "seconds": 0.5
         }
     },
     "yggdrasil.authserver.authenticate.token_pool": {

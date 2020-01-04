@@ -1,10 +1,10 @@
-from natrium.util.cache import AioMultiCacheBucket
+from AioCacheBucket import AioMultiCacheBucket
 from fastapi import FastAPI
 from contextlib import contextmanager
 import asyncio
 
 app = FastAPI(openapi_url='/openapi/openapi.json')
-cache_pool = AioMultiCacheBucket(app, {})
+cache_pool = AioMultiCacheBucket({})
 
 def include_sub():
     from natrium.applications.yggdrasil import router as Yggdrasil
@@ -13,7 +13,7 @@ def include_sub():
     app.include_router(Natrium, prefix="/natrium")
 
 def pool_close():
-    cache_pool.event_shutdown_listener()
+    cache_pool.close_scavenger()
 
 @contextmanager
 def makeapp():
