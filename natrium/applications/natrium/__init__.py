@@ -9,7 +9,7 @@ router = APIRouter()
 async def static_resource(resource: str):
     return FileResponse(str(Path(f"./assets/resources/{resource}.png").absolute()))
 
-
-import natrium.applications.natrium.authenticate
 import natrium.applications.natrium.buckets
 import natrium.applications.natrium.exceptions
+
+import natrium.applications.natrium.paths.authserver

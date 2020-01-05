@@ -12,9 +12,11 @@ class AInfo(BaseModel):
 class OptionalClientToken(BaseModel):
     clientToken: Optional[str] = None
 
-class AuthenticateRequest(BaseModel):
+class AccountAuth(BaseModel):
     email: str
     password: str
+
+class AuthenticateRequest(AccountAuth):
     requestAccount: bool = False
     authenticate: Optional[OptionalClientToken] = OptionalClientToken()
 

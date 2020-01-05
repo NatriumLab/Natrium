@@ -13,7 +13,13 @@ cache_pool.setup({
             "seconds": 1
         }
     }, # 验证提交凭据时的冷却限制,
-    "natrium.tokens.danger.abandoned": {}
+    "natrium.tokens.danger.abandoned": {},
+    "natrium.authserver.validate.ipLocks": {
+        "default_expire_delta": {
+            "seconds": 3
+        }
+    }
 })
 TokenBucket = cache_pool.getBucket("natrium.tokens")
 VerifyLocks = cache_pool.getBucket("natrium.authenticate.verify.locks")
+ValidateIpLocks = cache_pool.getBucket("natrium.authserver.validate.ipLocks")
