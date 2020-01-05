@@ -17,6 +17,10 @@ sudo yum install postgresql-libs
 sudo pacman -S postgresql-libs
 ```
 
+在Windows环境中部署时, 请先安装`Visual C++ Build Tools 14`, 以防止安装模块 `httptools` 时发生不可名状的错误.  
+[`Stack OverFlow` 上的相关问题](https://developercommunity.visualstudio.com/content/problem/431673/microsoft-visual-c-140-is-required.html)  
+若是您觉得太麻烦, 请使用WSL, 虽然我没用, 但为了你的时间着想, 还是请在GNU/Linux环境部署.
+
 然后使用pip安装pipenv:
 ``` bash
 sudo pip install pipenv
@@ -33,7 +37,11 @@ pipenv --three # 创建venv虚拟环境
 pipenv install # 安装需求包
 ```
 
-使用uvicorn启动本项目, 可以使用 `--port` 参数改动端口:
-```
-uvicorn main:app --port 8000
+启动:
+``` bash
+pipenv shell
+python main.py
+
+# or
+pipenv run main
 ```
