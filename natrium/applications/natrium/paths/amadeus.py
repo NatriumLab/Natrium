@@ -62,6 +62,9 @@ async def amadeus_upload(
                     if strict: # 是否严格
                         raise exceptions.OccupyExistedAddress()
                     else: # 不严格就自动设置为Private
+                        # 不严格记得检查下Account, 防止同一个人上传已存在的.
+                        if uploader.Id == i.Owner.Id:
+                            raise exceptions.OccupyExistedAddress()
                         result.update({
                             "warnings": []
                         })

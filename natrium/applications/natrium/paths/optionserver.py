@@ -107,10 +107,26 @@ async def os_char_delete(
     }
 
 @router.post(
+    "/optionserver/character/{characterId}/publicStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def os_char_publicStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        character: Character = Depends(depends.CharacterFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != character.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "publicStats": character.Public
+        }
+
+@router.post(
     "/optionserver/character/{characterId}/publicStats/transformTo/{public}",
     dependencies=[Depends(depends.Permissison("Normal"))]
 )
-async def os_char_transform(
+async def os_char_publicStats_transform(
         public: enums.PublicStatus,
         account: Account = Depends(depends.AccountFromRequest),
         character: Character = Depends(depends.CharacterFromPath)
@@ -130,10 +146,42 @@ async def os_char_transform(
     }
 
 @router.post(
+    "/optionserver/resource/{resourceId}/publicStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def os_reso_publicStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        resource: Resource = Depends(depends.ResourceFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != resource.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "publicStats": not resource.IsPrivate
+        }
+
+@router.post(
+    "/optionserver/resource/{resourceId}/protectStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def os_reso_protectStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        resource: Resource = Depends(depends.ResourceFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != resource.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "protectStats": resource.Protect
+        }
+
+@router.post(
     "/optionserver/resource/{resourceId}/publicStats/transformTo/{public}",
     dependencies=[Depends(depends.Permissison("Normal"))]
 )
-async def os_reso_transform(
+async def os_reso_transform_publicStats(
         public: enums.PublicStatus,
         account: Account = Depends(depends.AccountFromRequest),
         resource: Resource = Depends(depends.ResourceFromPath)
@@ -145,10 +193,40 @@ async def os_reso_transform(
         # 检查是否有origin
         if resource.Origin:
             if resource.Origin.Protect or resource.Origin.Private:
-                # 如果是私有或带保护
-                raise exceptions.PermissionDenied()
+                # 如果是私有或带保护, 则不准公开.
+                if public == "public":
+                    raise exceptions.PermissionDenied()
 
-        resource.IsPrivate = public != enums.PublicStatus.Public
+        resource.IsPrivate = public != "public"
+        orm.commit()
+    return {
+        "operator": "success",
+        "metadata": {
+            "account": account.Id
+        }
+    }
+
+@router.post(
+    "/optionserver/resource/{resourceId}/protectStats/transformTo/{stats}",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def os_reso_transform_protectStats(
+        stats: bool,
+        account: Account = Depends(depends.AccountFromRequest),
+        resource: Resource = Depends(depends.ResourceFromPath)
+    ):
+    if resource.Owner.Id != account.Id:
+        raise exceptions.PermissionDenied()
+    with orm.db_session:
+        resource = Resource.get(Id=resource.Id)
+        # 检查是否有origin
+        if resource.Origin:
+            if resource.Origin.Protect or resource.Origin.Private:
+                # 如果是私有或带保护, 则不准加保护.
+                if stats:
+                    raise exceptions.PermissionDenied()
+
+        resource.Protect = stats
         orm.commit()
     return {
         "operator": "success",

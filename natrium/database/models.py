@@ -16,17 +16,24 @@ class Resource(db.Entity):
         bool(re.match(r"^[a-zA-Z\u4e00-\u9fa5][a-zA-Z\u4e00-\u9fa5_\-0-9]*$", value)) and\
         len(value) <= 40
     )
+
     PicHeight = orm.Required(int, py_check=lambda value: not bool(value % 16))
     PicWidth = orm.Required(int, py_check=lambda value: not bool(value % 16))
+
     Model = orm.Optional(str, py_check=lambda i: i in ['steve', 'alex', 'none'], default="steve")
     Type = orm.Required(str, py_check=lambda i: i in ['skin', 'cape'])
+
     CreatedAt = orm.Required(datetime, default=datetime.now)
     Owner = orm.Required(lambda: Account)
+
     IsPrivate = orm.Required(bool, default=False)
     Protect = orm.Required(bool, default=False)
     Origin = orm.Optional("Resource")
+
+    Forks = orm.Set("Resource")
     UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
     UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
+
 
     def format_self(self, requestHash=False):
         result = {
@@ -76,7 +83,7 @@ class Character(db.Entity):
     CreatedAt = orm.Required(datetime, default=datetime.now)
     UpdatedAt = orm.Required(datetime, default=datetime.now)
 
-    Public = orm.Required(bool, default=False)
+    Public = orm.Required(bool, default=True)
 
     def FormatResources(self, metadata=True, auto=False, url=config['hosturl'].rstrip("/")):
         if auto and self.Skin: # 是否依据资源模型自动生成metadata(model==alex)
