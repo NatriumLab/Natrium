@@ -142,6 +142,12 @@ async def os_reso_transform(
         raise exceptions.PermissionDenied()
     with orm.db_session:
         resource = Resource.get(Id=resource.Id)
+        # 检查是否有origin
+        if resource.Origin:
+            if resource.Origin.Protect or resource.Origin.Private:
+                # 如果是私有或带保护
+                raise exceptions.PermissionDenied()
+
         resource.IsPrivate = public != enums.PublicStatus.Public
         orm.commit()
     return {

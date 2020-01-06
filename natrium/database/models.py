@@ -23,6 +23,8 @@ class Resource(db.Entity):
     CreatedAt = orm.Required(datetime, default=datetime.now)
     Owner = orm.Required(lambda: Account)
     IsPrivate = orm.Required(bool, default=False)
+    Protect = orm.Required(bool, default=False)
+    Origin = orm.Optional("Resource")
     UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
     UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
 
