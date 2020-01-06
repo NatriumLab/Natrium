@@ -9,6 +9,7 @@ from datetime import timedelta
 from natrium.util.objective_dict import ObjectiveDict
 from natrium.util.passwd import verify_passwd
 from .buckets import TokenBucket
+from . import exceptions
 
 config = ObjectiveDict(config)
 
@@ -40,7 +41,10 @@ class Token:
 
     @staticmethod
     def getToken(AccessToken: str, ClientToken: Optional[str] = None) -> "Token":
-        r = TokenBucket.get(uuid.UUID(AccessToken))
+        try:
+            r = TokenBucket.get(uuid.UUID(AccessToken))
+        except TypeError:
+            raise exceptions.AuthenticateVerifyException()
         if not r:
             return None
         if ClientToken:

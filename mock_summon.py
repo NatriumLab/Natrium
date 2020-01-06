@@ -6,8 +6,9 @@ from uuid import UUID
 import cProfile
 import asyncio
 import bcrypt
+from natrium import cache_pool
 
-print(db.generate_mapping(create_tables=True))
+#print(db.generate_mapping(create_tables=True))
 
 @orm.db_session
 def test():
@@ -91,6 +92,7 @@ def test():
     # unique错误会爆pony.orm.core.TransactionIntegrityError
     orm.commit()
 
+    cache_pool.close_scavenger()
 
 test()
 #cProfile.run("test()")

@@ -12,4 +12,8 @@ async def static_resource(resource: str):
 import natrium.applications.natrium.buckets
 import natrium.applications.natrium.exceptions
 
+# sub.
 import natrium.applications.natrium.paths.authserver
+import natrium.applications.natrium.paths.resourceserver
+import natrium.applications.natrium.paths.optionserver
+import natrium.applications.natrium.paths.amadeus

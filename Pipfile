@@ -21,6 +21,8 @@ psycopg2 = "*"
 aiofiles = "*"
 httptools = "*"
 AioCacheBucket = "*"
+pillow = "*"
+python-multipart = "*"
 
 [pipenv]
 allow_prereleases = true

@@ -5,8 +5,8 @@ from starlette.requests import Request
 from urllib.parse import parse_qs, urlencode, urlparse
 from natrium.util.sign import key
 from functools import reduce
-from natrium.database.models import Character
 from natrium.database.connection import db
+from natrium.database.models import Character
 from pony import orm
 from natrium import cache_pool
 
@@ -31,7 +31,6 @@ auth_token_pool = cache_pool.getBucket("yggdrasil.authserver.authenticate.token_
 session_server_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
 
 router = APIRouter()
-db.generate_mapping()
 
 @router.get("/")
 async def yggdrasil_index(request: Request):
@@ -44,7 +43,6 @@ async def yggdrasil_index(request: Request):
         "skinDomains": config['meta'].get("siteDomains") or [request.url.netloc.split(":")[0]],
         "signaturePublickey": key['public'].export_key().decode()
     })
-
 
 @router.post("/api/profiles/minecraft")
 async def yggdrasil_profiles_query(request: Request):

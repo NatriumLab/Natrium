@@ -135,6 +135,7 @@ async def validate(request: Request):
 
 @router.post("/authserver/invalidate")
 async def invalidate(request: Request):
+    """注销请求中给出的Token"""
     data: dict = await request.json()
     origin_token = Token.getToken(data.get("accessToken"), ClientToken=data.get("clientToken"))
     if origin_token:

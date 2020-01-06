@@ -1,13 +1,15 @@
 from enum import Enum
 
-class MCTextureType(Enum):
+class MCTextureType(str, Enum):
     skin = "skin"
     cape = "cape"
-    elytra = "elytra"
+    auto = "auto"
 
-class MCTextureModel(Enum):
+class MCTextureModel(str, Enum):
     steve = "steve"
     alex = "alex"
+    none = "none"
+    auto = "auto"
 
 class Classes(Enum):
     standard = "standard"
@@ -19,3 +21,7 @@ class GroupJoin(Enum):
     problems = "problems" # 需要回答问题并通过管理员的验证
     directly = "directly" # 直接进入
     deny = "deny" # 无法发出申请
+
+class PublicStatus(str, Enum):
+    Public = "public",
+    Private = "private"

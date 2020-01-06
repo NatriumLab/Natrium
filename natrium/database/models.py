@@ -19,13 +19,26 @@ class Resource(db.Entity):
     PicHeight = orm.Required(int, py_check=lambda value: not bool(value % 16))
     PicWidth = orm.Required(int, py_check=lambda value: not bool(value % 16))
     Model = orm.Optional(str, py_check=lambda i: i in ['steve', 'alex', 'none'], default="steve")
-    Type = orm.Required(str, py_check=lambda i: i in ['skin', 'cape', 'elytra'])
+    Type = orm.Required(str, py_check=lambda i: i in ['skin', 'cape'])
     CreatedAt = orm.Required(datetime, default=datetime.now)
     Owner = orm.Required(lambda: Account)
     IsPrivate = orm.Required(bool, default=False)
     UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
     UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
-    UsedforElytra = orm.Set("Character", reverse='Elytra', lazy=True)
+
+    def format_self(self, requestHash=False):
+        result = {
+            "id": self.Id,
+            "name": self.Name,
+            "createdAt": self.CreatedAt,
+            "metadata": {
+                "type": self.Type,
+                "model": self.Model
+            }
+        }
+        if requestHash:
+            result['metadata']['hash'] = self.PicHash
+        return result
 
 class Account(db.Entity):
     Id = orm.PrimaryKey(uuid.UUID, default=uuid.uuid4, auto=True)
@@ -55,12 +68,13 @@ class Character(db.Entity):
     PlayerName = orm.Required(str, py_check=lambda value: bool(re.match(r"^[a-zA-Z][a-zA-Z0-9_\-]*$", value)))
     Owner = orm.Required(Account)
 
-    Skin = orm.Optional(Resource, py_check=lambda value: value.Type == "skin")
-    Cape = orm.Optional(Resource, py_check=lambda value: value.Type == "cape")
-    Elytra = orm.Optional(Resource, py_check=lambda value: value.Type == "elytra")
+    Skin: Resource = orm.Optional(Resource, py_check=lambda value: value.Type == "skin")
+    Cape: Resource = orm.Optional(Resource, py_check=lambda value: value.Type == "cape")
 
     CreatedAt = orm.Required(datetime, default=datetime.now)
     UpdatedAt = orm.Required(datetime, default=datetime.now)
+
+    Public = orm.Required(bool, default=False)
 
     def FormatResources(self, metadata=True, auto=False, url=config['hosturl'].rstrip("/")):
         if auto and self.Skin: # 是否依据资源模型自动生成metadata(model==alex)
@@ -87,12 +101,6 @@ class Character(db.Entity):
                     "url": f"{url}{config['resource-static-path'].format(hash=self.Cape.PicHash)}",
                 }
             })
-        if self.Elytra: # 大部分时候大家都不处理这个, 但是考虑到兼容性和可维护性, 还是整上.
-            result['textures'].update({
-                "ELYTRA": {
-                    "url": f"{url}/{config['resource-static-path'].format(hash=self.Elytra.PicHash)}",
-                }
-            })
         return result
 
     def FormatCharacter(self, unsigned=False, Properties=False, metadata=True, auto=False, url=config['hosturl'].rstrip("/")):
@@ -115,3 +123,40 @@ class Character(db.Entity):
                 for i in range(len(result['properties'])):
                     result['properties'][i]['signature'] = Signature(result['properties'][i]['value'])
         return result
+
+    def format_self(self):
+        result = {
+            "id": self.Id,
+            "player": {
+                "id": self.PlayerId,
+                "name": self.PlayerName
+            },
+            "createdAt": self.CreatedAt,
+            "lastUpdatedAt": self.UpdatedAt,
+            "loadedTextures": {}
+        }
+        if self.Skin:
+            result['loadedTextures']['skin'] = {
+                "id": self.Skin.Id,
+                "name": self.Skin.Name,
+                "createdAt": self.Skin.CreatedAt,
+                "metadata": {
+                    "type": self.Skin.Type,
+                    "model": self.Skin.Model
+                }
+            }
+        
+        if self.Cape:
+            result['loadedTextures']['cape'] = {
+                "id": self.Cape.Id,
+                "name": self.Cape.Name,
+                "createdAt": self.Cape.CreatedAt,
+                "metadata": {
+                    "type": self.Cape.Type,
+                    "model": self.Cape.Model
+                }
+            }
+        return result
+
+    def update_UpdatedAt(self):
+        self.UpdatedAt = datetime.now()

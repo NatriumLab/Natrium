@@ -94,8 +94,9 @@ async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
 
 @router.post("/authserver/validate")
 async def authserver_validate(
-    request: Request,
-    status = Depends(depends.TokenStatus)):
+        request: Request,
+        status = Depends(depends.TokenStatus)
+    ):
     """请求Token状态, 对于该API, 使用了IP限制, 约为3s一次."""
 
     if not ValidateIpLocks.get(request.client.host):
@@ -109,6 +110,7 @@ async def authserver_validate(
 
 @router.post("/authserver/invalidate")
 async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
+    """注销请求中给出的Token"""
     TokenBucket.delete(token.AccessToken)
     return {"operator": "success"}
 

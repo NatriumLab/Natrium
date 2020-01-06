@@ -1,13 +1,5 @@
-from fastapi import FastAPI
-import asyncio
-from starlette.responses import UJSONResponse
-from natrium.util.randoms import String
-import maya
-import random
-import uuid
-from natrium import makeapp
+from natrium import app
 
 if __name__ == "__main__":
     import uvicorn
-    with makeapp() as app:
-        uvicorn.run(app, port=8000)
+    uvicorn.run(app, port=8000)

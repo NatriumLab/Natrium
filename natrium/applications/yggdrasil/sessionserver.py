@@ -27,7 +27,6 @@ async def session_minecraft_join(request: Request):
     with orm.db_session:
         result = orm.select(i for i in Character if i.Id == token.Character.Id)
         if not result.exists():
-            print("4")
             return error_handle(exceptions.InvalidToken())
         result: Character = result.first()
         if data.get("selectedProfile") != result.PlayerId.hex:

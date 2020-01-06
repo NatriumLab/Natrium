@@ -8,7 +8,7 @@ async def RequestValidateExceptionHandler(request, exc: RequestValidationError):
     before = json.loads(exc.json())
     return Response({
         "error": "RequestValidationException",
-        "detail": before['detail']
+        "detail": before
     }, status_code=403)
 
 @app.exception_handler(json.decoder.JSONDecodeError)
@@ -56,4 +56,38 @@ class FrequencyLimit(BaseException):
     NoAnyMoreConfiure = True
     error = "ForbiddenOperationException"
     message = "Frequency limit is triggered, please try again later."
+    code = 403
+
+class NoSuchResourceException(BaseException):
+    NoAnyMoreConfiure = True
+    error = "NoSuchResourceException"
+    message = "The server does not have the resource you requested. Please confirm that the request is correct."
+    code = 404
+
+class PermissionDenied(AuthenticateVerifyException):
+    NoAnyMoreConfiure = True
+    error = "PermissionDenied"
+
+class NonCompliantMsg(BaseException):
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "You submitted a field that failed verification."
+    code = 403
+
+class OccupyExistedAddress(BaseException):
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "Please do not try to occupy an existing address."
+    code = 403
+
+class SizeLimit(BaseException):
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "The uploaded image file content size exceeds the limit."
+    code = 403
+
+class UnrecognizedContent(BaseException):
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "The server does not accept an unrecognized request body."
     code = 403
