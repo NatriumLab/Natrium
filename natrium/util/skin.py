@@ -51,5 +51,3 @@ if __name__ == "__main__":
     from PIL import Image
     assert isSilmSkin(Image.open("./assets/resources/81c26f889ba6ed12f97efbac639802812c687b4ffcc88ea75d6a8d077328b3bf.png")) == False
     assert isSilmSkin(Image.open("./assets/resources/490bd08f1cc7fce67f2e7acb877e5859d1605f4ffb0893b07607deae5e05becc.png")) == True
-    assert isCape(Image.open("./assets/resources/ddcf7d09723e799e59d7f19807d0bf5e3a2c044ce17e76a48b8ac4d27c0b16e0.png")) == True
-    assert isCape(Image.open("./assets/resources/81c26f889ba6ed12f97efbac639802812c687b4ffcc88ea75d6a8d077328b3bf.png")) == False

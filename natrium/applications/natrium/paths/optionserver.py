@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from .. import depends
 from .. import router
 from .. import exceptions
@@ -8,6 +8,7 @@ from typing import Optional
 from natrium.database.models import Account, Resource, Character
 from natrium.util import enums
 from .. import models
+from .. import resource_manager
 from natrium.util import res
 from natrium.util.hashing import OfflinePlayerUUID
 from datetime import datetime as dt
@@ -198,6 +199,8 @@ async def os_reso_transform_publicStats(
                     raise exceptions.PermissionDenied()
 
         resource.IsPrivate = public != "public"
+        if public == "private":
+            resource.Protect = False
         orm.commit()
     return {
         "operator": "success",
@@ -222,9 +225,12 @@ async def os_reso_transform_protectStats(
         # 检查是否有origin
         if resource.Origin:
             if resource.Origin.Protect or resource.Origin.Private:
-                # 如果是私有或带保护, 则不准加保护.
-                if stats:
-                    raise exceptions.PermissionDenied()
+                # 如果是私有或带保护, 则不准更改保护状态.
+                # 注意: 这里需要强制转变保护状态
+                if resource.Protect:
+                    resource.Protect = False
+                    orm.commit()
+                raise exceptions.PermissionDenied()
 
         resource.Protect = stats
         orm.commit()
@@ -240,13 +246,31 @@ async def os_reso_transform_protectStats(
     dependencies=[Depends(depends.Permissison("Normal"))]
 )
 async def os_reso_delete(
+        bgTasks: BackgroundTasks,
+
         account: Account = Depends(depends.AccountFromRequest),
         resource: Resource = Depends(depends.ResourceFromPath)
     ):
     if resource.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
     with orm.db_session:
-        resource = Resource.get(Id=resource.Id).delete()
+        resource = Resource.get(Id=resource.Id)
+        # 检查其fork, 因为该资源被删除, 所以资源的各个Fork也应该被删除.
+        if resource.Forks[:]:
+            for i in resource.Forks:
+                # 解除角色绑定
+                if i.UsedforSkin:
+                    for ii in i.UsedforSkin:
+                        ii.Skin = None
+                if i.UsedforCape:
+                    for ii in i.UsedforCape:
+                        ii.Cape = None
+                # 删除.
+                i.delete()
+
+        bgTasks.add_task(resource_manager.Delete, resource.PicHash)
+        resource.delete()
+        orm.commit()
     return {
         "operator": "success",
         "metadata": {

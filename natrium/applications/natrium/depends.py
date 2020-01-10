@@ -1,4 +1,4 @@
-from fastapi import Depends, Header, Body, HTTPException
+from fastapi import Depends, Header, Body, HTTPException, Form
 from pony import orm
 from .models import AInfo, OptionalAInfo
 from .buckets import TokenBucket
@@ -9,21 +9,41 @@ from natrium.database.models import Account, Resource, Character
 from typing import Dict, Optional
 import maya
 from starlette.requests import Request
-import json
 import uuid
+from natrium.json_interface import handler as json
+import orjson
 
-async def TokenVerify(Authenticate: AInfo) -> Token:
-    token = Token.getToken(
-        Authenticate.auth.accessToken,
-        ClientToken=Authenticate.auth.clientToken
-    )
-    if not token:
-        raise AuthenticateVerifyException()
-    if not token.is_alive:
-        raise AuthenticateVerifyException()
-    return token
+def TokenVerify(form=False):
+    if not form:
+        async def warpper(Authenticate: AInfo) -> Token:
+            token = Token.getToken(
+                Authenticate.auth.accessToken,
+                ClientToken=Authenticate.auth.clientToken
+            )
+            if not token:
+                raise AuthenticateVerifyException()
+            if not token.is_alive:
+                raise AuthenticateVerifyException()
+            return token
+        return warpper
+    else:
+        async def warpper(Authenticate = Form(...)):
+            data = AInfo.parse_raw(Authenticate)
+            token = Token.getToken(
+                data.auth.accessToken,
+                ClientToken=data.auth.clientToken
+            )
+            if not token:
+                raise AuthenticateVerifyException()
+            if not token.is_alive:
+                raise AuthenticateVerifyException()
+            return token
+        return warpper
 
-async def AccountFromRequest(token: Token = Depends(TokenVerify)):
+async def AccountFromRequest(token: Token = Depends(TokenVerify())):
+    return token.Account
+
+async def AccountFromRequestForm(token = Depends(TokenVerify(True))):
     return token.Account
 
 async def TokenStatus(Authenticate: AInfo) -> Dict:
@@ -43,7 +63,7 @@ async def TokenStatus(Authenticate: AInfo) -> Dict:
         return {"status": "unknown"}
     
 def Permissison(Permission):
-    async def PermissionWarpper(token: Token = Depends(TokenVerify)):
+    async def PermissionWarpper(token: Token = Depends(TokenVerify())):
         if token.Account.Permission != Permission:
             raise exceptions.PermissionDenied()
     return PermissionWarpper

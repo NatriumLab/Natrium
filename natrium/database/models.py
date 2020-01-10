@@ -28,9 +28,10 @@ class Resource(db.Entity):
 
     IsPrivate = orm.Required(bool, default=False)
     Protect = orm.Required(bool, default=False)
-    Origin = orm.Optional("Resource")
 
+    Origin = orm.Optional("Resource")
     Forks = orm.Set("Resource")
+
     UsedforSkin = orm.Set("Character", reverse='Skin', lazy=True)
     UsedforCape = orm.Set("Character", reverse='Cape', lazy=True)
 

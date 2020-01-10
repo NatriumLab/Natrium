@@ -3,12 +3,10 @@ from enum import Enum
 class MCTextureType(str, Enum):
     skin = "skin"
     cape = "cape"
-    auto = "auto"
 
 class MCTextureModel(str, Enum):
     steve = "steve"
     alex = "alex"
-    none = "none"
     auto = "auto"
 
 class Classes(Enum):

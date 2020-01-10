@@ -1,5 +1,5 @@
 # for <Steins;Gate>'s Makise Kurisu, el psy congroo :)
-from fastapi import UploadFile, File, BackgroundTasks
+from fastapi import UploadFile, File, BackgroundTasks, Query
 from fastapi import Depends
 from .. import depends
 from .. import router
@@ -15,106 +15,165 @@ from conf import config
 import PIL
 from natrium.util import enums, skin, hashing, res
 from pathlib import Path
-import aiofiles
+import maya
 
 def Save(image, Hash):
     image.save(f"./assets/resources/{Hash}.png", "PNG")
 
 @router.post(
     "/amadeus/upload/{name}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+#    dependencies=[Depends(depends.Permissison("Normal"))]
 )
 async def amadeus_upload(
-        name: str, bgTasks: BackgroundTasks,
-        strict: bool = True,
+        bgTasks: BackgroundTasks,
 
         file: UploadFile = File(...),
-        Type: enums.MCTextureType = "auto",
-        Model: enums.MCTextureModel = "auto",
-        Private: bool = False, Protect: bool = False,
+        name: str = Query(..., min_length=4, max_length=60, regex=res.ResourceName),
 
-        uploader: Account = Depends(depends.AccountFromRequest)
+        Model: enums.MCTextureModel = Query("auto", alias="model"),
+        Type: enums.MCTextureType = Query(..., alias="type"),
+        
+        Private: bool = False,
+        Protect: bool = False,
+
+        uploader: Account = Depends(depends.AccountFromRequestForm)
     ):
-    Origin = None
-    result = {}
-    if not res.verify(name, res.ResourceName):
+    """参数name为要创建的资源名称.\n 
+    通过表单API上传图片, 名称"file"\n
+
+    可用get query传参: \n
+    
+    ``` url
+    http://127.0.0.1:8000/natrium/amadeus/upload/aResourceName?type=skin&strict=true&model=alex
+    ```
+    """
+    # 常量分配
+    Original: bool = True # 在库中是否是第一个被创建的
+    OriginalResource: Optional[Resource] = None
+    OriginalUploader: Optional[Account] = None
+
+    if Private and Protect:
+        raise exceptions.DuplicateRegulations()
+
+    image: Image = Image.open(BytesIO(await file.read()))
+    width, height = image.size
+
+    if height > config['natrium']['upload']['picture-size']['height'] or\
+        width > config['natrium']['upload']['picture-size']['width']:
         raise exceptions.NonCompliantMsg()
-    with BytesIO() as b:
-        try:
-            b.write(await file.read())
-            image: Image = Image.open(b)
-        except PIL.UnidentifiedImageError:
-            raise exceptions.UnrecognizedContent()
-    picHash = hashing.PicHash(image)
+
+    image.resize((
+        int(width / 22) * 32 if width % 22 == 0 else width,
+        int(width / 17) * 32 if height % 17 == 0 else height
+    ))
+
+    pictureContentHash = hashing.PicHash(image)
 
     with orm.db_session:
-        #attept = Resource.get(PicHash=picHash)
-        attept = orm.select(i for i in Resource if i.PicHash == picHash)
-        if attept.exists():
-            for i in list(attept):
-                if not i.IsPrivate: # 如果私有
-                    if Protect: # ?还想设置保护?
-                        raise exceptions.PermissionDenied()
-                    if not Private: # 我都说了, 只能自己偷偷用.
-                        raise exceptions.OccupyExistedAddress()
-                if i.Protect and not Private:
-                    # 源作者设置保护, 将不能以公开形式上传.(只能自己偷偷用.)
-                    if strict: # 是否严格
-                        raise exceptions.OccupyExistedAddress()
-                    else: # 不严格就自动设置为Private
-                        # 不严格记得检查下Account, 防止同一个人上传已存在的.
-                        if uploader.Id == i.Owner.Id:
-                            raise exceptions.OccupyExistedAddress()
-                        result.update({
-                            "warnings": []
-                        })
-                        result['warnings'].append({
-                            "type": "ProtectedResource",
-                            "message": "Because the source author has set up protection for this resource, \
-                                and you have not used strict mode, \
-                                    the resources you upload can only be used for your own use.",
-                            "metadata": {
-                                "origin": i.Id
+        attempt_select = orm.select(i for i in Resource if i.PicHash == pictureContentHash)
+        if attempt_select.exists():
+            # 如果真的有上传的数据一样的
+            Original = False
+            for i in attempt_select[:]:
+                # 询问数据库, 找到原始作者
+                if not i.Origin:
+                    OriginalResource = i
+                    OriginalUploader = i.Owner
+                    break
+
+            if not OriginalResource or\
+                not OriginalUploader: # 判断是否找到了, 如果没找到, 说明数据库信息受损
+                raise exceptions.BrokenData({
+                    "PictureHash": pictureContentHash,
+                    "ExceptionRaisedTime": maya.now()
+                })
+            # 如果有attempt_select, 就一定有一个origin.
+
+            # 判断是否是原作者闲着没事干, 重新上传了一个.
+            if OriginalUploader.Id == uploader.Id:
+                raise exceptions.OccupyExistedAddress({
+                    "originalResource": {
+                        "id": OriginalResource.Id,
+                        "owner": OriginalUploader.Id
+                    },
+                    "uploader": {
+                        "id": uploader.Id
+                    }
+                })
+            else: # ...或者是其他人, 这种情况我们需要特殊处理
+                # 由于Protect的受限度较低, 故放在上面点.
+                if OriginalResource.Protect:
+                    if Protect or Private:
+                        raise exceptions.PermissionDenied({
+                            "originalResource": {
+                                "id": OriginalResource.Id,
+                                "owner": OriginalUploader.Id,
+                                "protect": OriginalResource.Protect,
+                                "private": OriginalResource.Private
+                            },
+                            "uploader": {
+                                "id": uploader.Id
                             }
                         })
-                        Private = True
-                        Origin = i
+                    else: # 但是你本来就可以设为这个啊, 为啥要自己整一路去?
+                        raise exceptions.OccupyExistedAddress({
+                            "originalResource": {
+                                "id": OriginalResource.Id,
+                                "owner": OriginalUploader.Id,
+                                "protect": OriginalResource.Protect,
+                            },
+                            "uploader": {
+                                "id": uploader.Id
+                            }
+                        })
+                elif OriginalResource.IsPrivate:
+                    # 如果私有, 则不允许任何人上传/使用/设保护/私有等
+                    raise exceptions.OccupyExistedAddress({
+                        "originalResource": {
+                            "id": OriginalResource.Id,
+                            "owner": OriginalUploader.Id,
+                            "protect": OriginalResource.Protect,
+                        },
+                        "uploader": {
+                            "id": uploader.Id
+                        }
+                    })
+                else:
+                    # 你什么私有保护什么的都没开? 别开你自己的私有保护什么的就OK.
+                    if Protect or Private:
+                        raise exceptions.PermissionDenied({
+                            "originalResource": {
+                                "id": OriginalResource.Id,
+                                "owner": OriginalUploader.Id
+                            },
+                            "uploader": {
+                                "id": uploader.Id
+                            },
+                            "options": {
+                                'protect': Protect,
+                                "private": Private
+                            }
+                        })
+                    else:
+                        pass
 
-        width = image.size[0]
-        height = image.size[1]
-
-        if height > config['natrium']['upload']['picture-size']['height'] or\
-            width > config['natrium']['upload']['picture-size']['width']:
-            raise exceptions.NonCompliantMsg
-
-        image.resize((
-            int(width / 22) * 32 if width % 22 == 0 else width,
-            int(width / 17) * 32 if height % 17 == 0 else height
-        ))
-
-        if Type == "auto":
-            Type = ["skin", "cape"][skin.isCape(image)]
-    
         if Model == "auto":
             Model = ['steve', 'alex'][skin.isSilmSkin(image)]
-    
+
         account = Account.get(Id=uploader.Id)
         resource = Resource(
-            PicHash = picHash,
+            PicHash = pictureContentHash,
             Name = name,
             PicHeight = height, PicWidth = width,
             Model = Model, Type = Type,
             Owner = account,
-            IsPrivate = Private
+            IsPrivate = Private, Protect = Protect,
+            Origin = OriginalResource
         )
-        if Origin:
-            resource.Origin = Origin
-        else:
-            # yysy, 这确实是你上传的.jpg
-            bgTasks.add_task(Save, image, picHash)
+        if Original:
+            bgTasks.add_task(Save, image, pictureContentHash)
         orm.commit()
-        result.update({
+        return {
             "operator": "success",
             "metadata": resource.format_self(requestHash=True)
-        })
-        return result
+        }

@@ -45,3 +45,9 @@ python main.py
 # or
 pipenv run main
 ```
+
+#### 更好的性能
+你可以通过安装 `orjson` 获得更好的JSON序列化性能, 我们对该模块进行了有限的支持.
+``` bash
+pipenv install orjson
+```

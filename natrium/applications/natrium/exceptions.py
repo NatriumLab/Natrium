@@ -1,13 +1,19 @@
 from fastapi.exceptions import RequestValidationError
+from pydantic.error_wrappers import ValidationError
 from starlette.responses import JSONResponse as Response
 from natrium import app
 import json
 
+@app.exception_handler(ValidationError)
 @app.exception_handler(RequestValidationError)
-async def RequestValidateExceptionHandler(request, exc: RequestValidationError):
+async def RequestValidateExceptionHandler(
+        request, 
+        exc: RequestValidationError or ValidationError
+    ):
     before = json.loads(exc.json())
+    print(exc)
     return Response({
-        "error": "RequestValidationException",
+        "error": exc.__class__.__name__,
         "detail": before
     }, status_code=403)
 
@@ -20,17 +26,25 @@ async def JSONDecodeExceptionHandler(request, exc):
 
 class BaseException(Exception):
     NoAnyMoreConfiure = False
-    def __init__(self, error=None, errorMessage=None, code=None, message="SomethingWrong"):
+    metadata = None
+
+    def __init__(self, metadata=..., error=None, errorMessage=None, code=None, message="SomethingWrong"):
         if not self.NoAnyMoreConfiure:
             self.error = error
             self.message = errorMessage,
             self.code = code
+        if metadata:
+            self.metadata = metadata
         super().__init__(message)
 
     def json(self):
         return {
             "error": self.error,
             "errorMessage": self.message
+        } if not self.metadata else {
+            "error": self.error,
+            "errorMessage": self.message,
+            "metadata": self.metadata
         }
 
     def response(self):
@@ -90,4 +104,18 @@ class UnrecognizedContent(BaseException):
     NoAnyMoreConfiure = True
     error = "ForbiddenOperationException"
     message = "The server does not accept an unrecognized request body."
+    code = 403
+
+class DuplicateRegulations(BaseException):
+    """当出现冲突事务时将抛出该error"""
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "Your request triggered a duplicate regulation restriction."
+    code = 403
+
+class BrokenData(BaseException):
+    NoAnyMoreConfiure = True
+    error = "ForbiddenOperationException"
+    message = "Broken data appears in the server database, \
+    please contact the site administrator immediately."
     code = 403
