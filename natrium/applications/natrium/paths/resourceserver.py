@@ -128,3 +128,19 @@ async def resources_resource_id(
         if requestHash:
             result['metadata']['hash'] = resource.PicHash
         return result
+
+@router.post("/resourceserver/resource/{resourceId}/forks")
+async def resources_resource_forks(
+        resource: Resource = Depends(depends.ResourceFromPath),
+        Account: Account = Depends(depends.AccountFromRequest)
+    ):
+    with orm.db_session:
+        resource: Resource = Resource.get(Id=resource.Id)
+        if not resource.Owner.Id != Account.Id:
+            raise exceptions.PermissionDenied()
+        return [{
+            "id": i.Id,
+            "name": i.Name,
+            "uploader": i.Owner,
+            "createAt": i.CreatedAt
+        } for i in resource.Forks]
