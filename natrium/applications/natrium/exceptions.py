@@ -1,6 +1,6 @@
 from fastapi.exceptions import RequestValidationError
 from pydantic.error_wrappers import ValidationError
-from starlette.responses import JSONResponse as Response
+from natrium.json_interface import selected_jsonencoder as Response
 from natrium import app
 import json
 
@@ -28,7 +28,7 @@ class BaseException(Exception):
     NoAnyMoreConfiure = False
     metadata = None
 
-    def __init__(self, metadata=..., error=None, errorMessage=None, code=None, message="SomethingWrong"):
+    def __init__(self, metadata=None, error=None, errorMessage=None, code=None, message="SomethingWrong"):
         if not self.NoAnyMoreConfiure:
             self.error = error
             self.message = errorMessage,

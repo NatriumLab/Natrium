@@ -7,6 +7,8 @@ from starlette.responses import JSONResponse
 import maya
 from natrium.json_interface import selected_jsonencoder
 
+print(selected_jsonencoder)
+
 app = FastAPI(openapi_url='/openapi/openapi.json', default_response_class=selected_jsonencoder)
 cache_pool = AioMultiCacheBucket({})
 app.add_event_handler("shutdown", cache_pool.close_scavenger)

@@ -76,6 +76,7 @@ async def amadeus_upload(
             Original = False
             for i in attempt_select[:]:
                 # 询问数据库, 找到原始作者
+                # 考虑加入uploader找寻.
                 if not i.Origin:
                     OriginalResource = i
                     OriginalUploader = i.Owner
@@ -155,7 +156,22 @@ async def amadeus_upload(
                             }
                         })
                     else:
-                        pass
+                        # 找寻上传者是否也曾经上传过该材质
+                        assert_the_same = orm.select(i for i in Resource\
+                            if i.PicHash == pictureContentHash and \
+                            i.Owner.Id == uploader.Id)
+                        if assert_the_same.exists():
+                            ats_first: Resource = assert_the_same.first()
+                            raise exceptions.OccupyExistedAddress({
+                                "ownedResource": {
+                                    "id": ats_first.Id,
+                                    "name": ats_first.Name
+                                },
+                                "uploader": {
+                                    "id": uploader.Id
+                                }
+                            })
+                        
 
         if Model == "auto":
             Model = ['steve', 'alex'][skin.isSilmSkin(image)]
