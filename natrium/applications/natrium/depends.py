@@ -1,4 +1,7 @@
 from fastapi import Depends, Header, Body, HTTPException, Form
+from fastapi.exceptions import RequestValidationError
+from pydantic.error_wrappers import ErrorWrapper
+from pydantic import errors as PydanticErrors
 from pony import orm
 from .models import AInfo, OptionalAInfo
 from .buckets import TokenBucket
@@ -6,14 +9,26 @@ from .token import Token
 from .exceptions import AuthenticateVerifyException
 from . import exceptions
 from natrium.database.models import Account, Resource, Character
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 import maya
 from starlette.requests import Request
 import uuid
 from natrium.json_interface import handler as json
 import orjson
 
-def TokenVerify(form=False):
+def JSONForm(*args, **kwargs) -> Any:
+    async def JSONForm_warpper(formdata: "LongStr" = Form(*args, **kwargs)) -> Any:
+        try:
+            return json.loads(formdata)
+        except:
+            # 这种情况只能判断为客户端传了个非json字符串过来...
+            raise RequestValidationError([
+                ErrorWrapper(PydanticErrors.JsonError(), ["body", "<JSONFormField>"])
+            ])
+            
+    return Depends(JSONForm_warpper)
+
+def TokenVerify(form=False, alias=None):
     if not form:
         async def warpper(Authenticate: AInfo) -> Token:
             token = Token.getToken(
@@ -27,8 +42,8 @@ def TokenVerify(form=False):
             return token
         return warpper
     else:
-        async def warpper(Authenticate = Form(...)):
-            data = AInfo.parse_raw(Authenticate)
+        async def warpper(Authenticate = JSONForm(..., alias=alias)):
+            data = AInfo.parse_obj(Authenticate)
             token = Token.getToken(
                 data.auth.accessToken,
                 ClientToken=data.auth.clientToken
@@ -43,8 +58,10 @@ def TokenVerify(form=False):
 async def AccountFromRequest(token: Token = Depends(TokenVerify())):
     return token.Account
 
-async def AccountFromRequestForm(token = Depends(TokenVerify(True))):
-    return token.Account
+def AccountFromRequestForm(alias=None):
+    async def AccountFromRequestForm_warpper(token = Depends(TokenVerify(True, alias=alias))):
+        return token.Account
+    return AccountFromRequestForm_warpper
 
 async def TokenStatus(Authenticate: AInfo) -> Dict:
     token = Token.getToken(

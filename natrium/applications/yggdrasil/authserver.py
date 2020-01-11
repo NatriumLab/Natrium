@@ -15,7 +15,7 @@ from natrium.applications.yggdrasil.models import Token
 import uuid
 
 
-@router.post("/authserver/authenticate")
+@router.post("/authserver/authenticate", tags=['yggdrasil'])
 async def authenticate(request: Request):
     data = await request.json()
     with orm.db_session:
@@ -58,7 +58,7 @@ async def authenticate(request: Request):
         return Response(result)
 
 
-@router.post("/authserver/refresh")
+@router.post("/authserver/refresh", tags=['yggdrasil'])
 async def refresh(request: Request):
     data = await request.json()
 
@@ -121,7 +121,7 @@ async def refresh(request: Request):
     return Response(result)
 
 
-@router.post("/authserver/validate")
+@router.post("/authserver/validate", tags=['yggdrasil'])
 async def validate(request: Request):
     data = await request.json()
     origin_token = Token.getToken(data.get("accessToken"), ClientToken=data.get("clientToken"))
@@ -133,7 +133,7 @@ async def validate(request: Request):
         return error_handle(exceptions.InvalidToken())
 
 
-@router.post("/authserver/invalidate")
+@router.post("/authserver/invalidate", tags=['yggdrasil'])
 async def invalidate(request: Request):
     """注销请求中给出的Token"""
     data: dict = await request.json()
@@ -151,7 +151,7 @@ async def invalidate(request: Request):
     return Response(status_code=204)
 
 
-@router.post("/authserver/signout")
+@router.post("/authserver/signout", tags=['yggdrasil'])
 async def signout(request: Request):
     data = await request.json()
     with orm.db_session:

@@ -11,7 +11,6 @@ async def RequestValidateExceptionHandler(
         exc: RequestValidationError or ValidationError
     ):
     before = json.loads(exc.json())
-    print(exc)
     return Response({
         "error": exc.__class__.__name__,
         "detail": before

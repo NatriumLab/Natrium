@@ -14,7 +14,7 @@ from natrium.applications.yggdrasil.models import Token
 import uuid
 
 
-@router.post("/sessionserver/session/minecraft/join")
+@router.post("/sessionserver/session/minecraft/join", tags=['yggdrasil'])
 async def session_minecraft_join(request: Request):
     data = await request.json()
     token = Token.getToken(data.get("accessToken"))
@@ -39,7 +39,7 @@ async def session_minecraft_join(request: Request):
     return Response(status_code=204)
 
 
-@router.get("/sessionserver/session/minecraft/hasJoined")
+@router.get("/sessionserver/session/minecraft/hasJoined", tags=['yggdrasil'])
 async def session_minecraft_hasJoined(username, serverId, ip=None):
     info = session_server_join.get(serverId)
     if not info:
@@ -53,7 +53,7 @@ async def session_minecraft_hasJoined(username, serverId, ip=None):
         return Response(status_code=204)
 
 
-@router.get("/sessionserver/session/minecraft/profile/{profile}")
+@router.get("/sessionserver/session/minecraft/profile/{profile}", tags=['yggdrasil'])
 async def session_minecraft_query_profiles(request: Request, profile: uuid.UUID, unsigned: bool = True):
     with orm.db_session:
         char = orm.select(i for i in Character if i.PlayerId == profile)

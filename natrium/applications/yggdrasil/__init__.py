@@ -32,7 +32,7 @@ session_server_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/", tags=['yggdrasil'])
 async def yggdrasil_index(request: Request):
     return Response({
         "meta": {
@@ -44,7 +44,7 @@ async def yggdrasil_index(request: Request):
         "signaturePublickey": key['public'].export_key().decode()
     })
 
-@router.post("/api/profiles/minecraft")
+@router.post("/api/profiles/minecraft", tags=['yggdrasil'])
 async def yggdrasil_profiles_query(request: Request):
     data = await request.json()
     data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)

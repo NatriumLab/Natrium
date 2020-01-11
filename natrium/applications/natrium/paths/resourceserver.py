@@ -144,3 +144,52 @@ async def resources_resource_forks(
             "uploader": i.Owner,
             "createAt": i.CreatedAt
         } for i in resource.Forks]
+
+@router.post(
+    "/resourceserver/resource/{resourceId}/protectStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def rs_reso_protectStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        resource: Resource = Depends(depends.ResourceFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != resource.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "protectStats": resource.Protect
+        }
+
+@router.post(
+    "/resourceserver/resource/{resourceId}/publicStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def rs_reso_publicStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        resource: Resource = Depends(depends.ResourceFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != resource.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "publicStats": not resource.IsPrivate
+        }
+
+
+@router.post(
+    "/resourceserver/character/{characterId}/publicStats/",
+    dependencies=[Depends(depends.Permissison("Normal"))]
+)
+async def rs_char_publicStats(
+        account: Account = Depends(depends.AccountFromRequest),
+        character: Character = Depends(depends.CharacterFromPath)
+    ):
+    with orm.db_session:
+        if account.Id != character.Owner.Id:
+            raise exceptions.PermissionDenied()
+        
+        return {
+            "publicStats": character.Public
+        }

@@ -20,3 +20,10 @@ def include_sub():
     from natrium.applications.natrium import router as Natrium
     app.include_router(Yggdrasil, prefix="/api/yggdrasil")
     app.include_router(Natrium, prefix="/natrium")
+
+def run():
+    import uvicorn
+    try:
+        uvicorn.run(app, port=8000)
+    finally:
+        cache_pool.close_scavenger()

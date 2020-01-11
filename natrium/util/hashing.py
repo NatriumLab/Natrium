@@ -44,4 +44,7 @@ def PicHash(image):
 
 
 if __name__ == "__main__":
-    print(OfflinePlayerUUID("Chenwe_i_lin"))
+    import cProfile
+    i = Image.open('./assets/resources/8e364d6d4886a76623062feed4690c67a23a66c5d84f126bd895b903ea26dbee.png')
+    i.load()
+    cProfile.run("PicHash(i)")

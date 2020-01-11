@@ -36,10 +36,11 @@ async def amadeus_upload(
         Private: bool = False,
         Protect: bool = False,
 
-        uploader: Account = Depends(depends.AccountFromRequestForm)
+        uploader: Account = Depends(depends.AccountFromRequestForm(alias="auth"))
     ):
     """参数name为要创建的资源名称.\n 
     通过表单API上传图片, 名称"file"\n
+    通过表单发送认证, 名称"auth".\n
 
     可用get query传参: \n
     
@@ -193,3 +194,4 @@ async def amadeus_upload(
             "operator": "success",
             "metadata": resource.format_self(requestHash=True)
         }
+

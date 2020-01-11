@@ -108,22 +108,6 @@ async def os_char_delete(
     }
 
 @router.post(
-    "/optionserver/character/{characterId}/publicStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
-)
-async def os_char_publicStats(
-        account: Account = Depends(depends.AccountFromRequest),
-        character: Character = Depends(depends.CharacterFromPath)
-    ):
-    with orm.db_session:
-        if account.Id != character.Owner.Id:
-            raise exceptions.PermissionDenied()
-        
-        return {
-            "publicStats": character.Public
-        }
-
-@router.post(
     "/optionserver/character/{characterId}/publicStats/transformTo/{public}",
     dependencies=[Depends(depends.Permissison("Normal"))]
 )
@@ -145,38 +129,6 @@ async def os_char_publicStats_transform(
             "account": account.Id
         }
     }
-
-@router.post(
-    "/optionserver/resource/{resourceId}/publicStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
-)
-async def os_reso_publicStats(
-        account: Account = Depends(depends.AccountFromRequest),
-        resource: Resource = Depends(depends.ResourceFromPath)
-    ):
-    with orm.db_session:
-        if account.Id != resource.Owner.Id:
-            raise exceptions.PermissionDenied()
-        
-        return {
-            "publicStats": not resource.IsPrivate
-        }
-
-@router.post(
-    "/optionserver/resource/{resourceId}/protectStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
-)
-async def os_reso_protectStats(
-        account: Account = Depends(depends.AccountFromRequest),
-        resource: Resource = Depends(depends.ResourceFromPath)
-    ):
-    with orm.db_session:
-        if account.Id != resource.Owner.Id:
-            raise exceptions.PermissionDenied()
-        
-        return {
-            "protectStats": resource.Protect
-        }
 
 @router.post(
     "/optionserver/resource/{resourceId}/publicStats/transformTo/{public}",
