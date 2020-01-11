@@ -23,6 +23,7 @@ httptools = "*"
 AioCacheBucket = "*"
 pillow = "*"
 python-multipart = "*"
+python-i18n = {extras = ["yaml"],version = "*"}
 
 [pipenv]
 allow_prereleases = true

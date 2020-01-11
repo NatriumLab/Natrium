@@ -7,8 +7,8 @@ from pony import orm
 from typing import Optional
 from natrium.database.models import Account, Resource, Character
 
-@router.get("/resourceserver/account/{accountId}")
-@router.post("/resourceserver/account/{accountId}")
+@router.get("/resourceserver/account/{accountId}", tags=['ResourceServer'])
+@router.post("/resourceserver/account/{accountId}", tags=['ResourceServer'])
 async def resources_account(
         accountId: uuid.UUID, 
         optionalAccount: Optional[Account] = Depends(depends.O_N_Owen)
@@ -46,8 +46,8 @@ async def resources_account(
             ]
         }
 
-@router.get("/resourceserver/character/{characterId}")
-@router.post("/resourceserver/character/{characterId}")
+@router.get("/resourceserver/character/{characterId}", tags=['ResourceServer'])
+@router.post("/resourceserver/character/{characterId}", tags=['ResourceServer'])
 async def resources_character_id(
         characterId: uuid.UUID,
         optionalAccount: Optional[Account] = Depends(depends.O_N_Owen)
@@ -104,8 +104,8 @@ async def resources_character_id(
                 }
         return result
 
-@router.get("/resourceserver/resource/{resourceId}")
-@router.post("/resourceserver/resource/{resourceId}")
+@router.get("/resourceserver/resource/{resourceId}", tags=['ResourceServer'])
+@router.post("/resourceserver/resource/{resourceId}", tags=['ResourceServer'])
 async def resources_resource_id(
         resource: Resource = Depends(depends.ResourceFromPath),
         optionalAccount: Optional[Account] = Depends(depends.O_N_Owen),
@@ -129,7 +129,7 @@ async def resources_resource_id(
             result['metadata']['hash'] = resource.PicHash
         return result
 
-@router.post("/resourceserver/resource/{resourceId}/forks")
+@router.post("/resourceserver/resource/{resourceId}/forks", tags=['ResourceServer'])
 async def resources_resource_forks(
         resource: Resource = Depends(depends.ResourceFromPath),
         Account: Account = Depends(depends.AccountFromRequest)
@@ -147,7 +147,8 @@ async def resources_resource_forks(
 
 @router.post(
     "/resourceserver/resource/{resourceId}/protectStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['ResourceServer']
 )
 async def rs_reso_protectStats(
         account: Account = Depends(depends.AccountFromRequest),
@@ -163,7 +164,8 @@ async def rs_reso_protectStats(
 
 @router.post(
     "/resourceserver/resource/{resourceId}/publicStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['ResourceServer']
 )
 async def rs_reso_publicStats(
         account: Account = Depends(depends.AccountFromRequest),
@@ -180,7 +182,8 @@ async def rs_reso_publicStats(
 
 @router.post(
     "/resourceserver/character/{characterId}/publicStats/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['ResourceServer']
 )
 async def rs_char_publicStats(
         account: Account = Depends(depends.AccountFromRequest),

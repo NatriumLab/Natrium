@@ -1,0 +1,30 @@
+zh_cn:
+  yggdrasil.index.summary: Mojang Yggdrasil API
+  yggdrasil.index.description: 自内建Mojang Yggdrasil API服务中获取相关数据.
+
+  yggdrasil.authserver.authenticate.summary: Yggdrasil Authserver 获取令牌
+  yggdrasil.authserver.authenticate.description: 通过该API获取仅能在该API中使用的用户认证令牌.
+
+  yggdrasil.authserver.refresh.summary: Yggdrasil Authserver 刷新令牌
+  yggdrasil.authserver.refresh.description: 注销提供的可刷新令牌, 重新获取可用的用户认证令牌
+
+  yggdrasil.authserver.validate.summary: Yggdrasil Authserver 检查令牌
+  yggdrasil.authserver.validate.description: 检查提供的令牌, 并返回相应结果
+
+  yggdrasil.authserver.invalidate.summary: Yggdrasil Authserver 注销令牌
+  yggdrasil.authserver.invalidate.description: 若给出的令牌有效, 则注销之
+
+  yggdrasil.authserver.signout.summary: Yggdrasil Authserver 登出
+  yggdrasil.authserver.signout.description: 若给出的用户登录信息正确, 则注销该用户现存的所有令牌
+
+  yggdrasil.profilesQuery.summary: Yggdrasil 查询多个角色及其信息
+  yggdrasil.profilesQuery.description: 通过请求中包含的用户名找寻与其相符的角色并序列化其信息
+
+  yggdrasil.sessionserver.joinServer.summary: Yggdrasil Sessionserver 请求加入服务器
+  yggdrasil.sessionserver.joinServer.description: 向服务端发出请求, 并在服务端缓存相关信息
+
+  yggdrasil.sessionserver.hasJoined.summary: Yggdrasil Sessionserver 查询加入请求
+  yggdrasil.sessionserver.hasJoined.description: 尝试从服务端获取欲连接的客户端信息, 并获取其角色信息
+
+  yggdrasil.sessionserver.profileQuery.summary: Yggdrasil Sessionserver 查询单个用户信息
+  yggdrasil.sessionserver.profileQuery.description: 从服务器拉取角色信息及其已绑定的材质信息

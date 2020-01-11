@@ -13,9 +13,11 @@ from natrium.applications.yggdrasil import exceptions, user_auth_cooling_bucket,
 import bcrypt
 from natrium.applications.yggdrasil.models import Token
 import uuid
+from i18n import t as Ts_
 
-
-@router.post("/authserver/authenticate", tags=['yggdrasil'])
+@router.post("/authserver/authenticate", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.authserver.authenticate.summary"),
+    description=Ts_("apidoc.yggdrasil.authserver.authenticate.description"))
 async def authenticate(request: Request):
     data = await request.json()
     with orm.db_session:
@@ -58,7 +60,9 @@ async def authenticate(request: Request):
         return Response(result)
 
 
-@router.post("/authserver/refresh", tags=['yggdrasil'])
+@router.post("/authserver/refresh", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.authserver.refresh.summary"),
+    description=Ts_("apidoc.yggdrasil.authserver.refresh.description"))
 async def refresh(request: Request):
     data = await request.json()
 
@@ -121,7 +125,9 @@ async def refresh(request: Request):
     return Response(result)
 
 
-@router.post("/authserver/validate", tags=['yggdrasil'])
+@router.post("/authserver/validate", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.authserver.validate.summary"),
+    description=Ts_("apidoc.yggdrasil.authserver.validate.description"))
 async def validate(request: Request):
     data = await request.json()
     origin_token = Token.getToken(data.get("accessToken"), ClientToken=data.get("clientToken"))
@@ -133,7 +139,9 @@ async def validate(request: Request):
         return error_handle(exceptions.InvalidToken())
 
 
-@router.post("/authserver/invalidate", tags=['yggdrasil'])
+@router.post("/authserver/invalidate", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.authserver.invalidate.summary"),
+    description=Ts_("apidoc.yggdrasil.authserver.invalidate.description"))
 async def invalidate(request: Request):
     """注销请求中给出的Token"""
     data: dict = await request.json()
@@ -151,7 +159,9 @@ async def invalidate(request: Request):
     return Response(status_code=204)
 
 
-@router.post("/authserver/signout", tags=['yggdrasil'])
+@router.post("/authserver/signout", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.authserver.signout.summary"),
+    description=Ts_("apidoc.yggdrasil.authserver.signout.description"))
 async def signout(request: Request):
     data = await request.json()
     with orm.db_session:

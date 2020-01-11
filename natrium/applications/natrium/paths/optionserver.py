@@ -15,7 +15,8 @@ from datetime import datetime as dt
 
 @router.post(
     "/optionserver/character/{characterId}/textures/bind/{resourceId}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_textures_bind(
         character: Character = Depends(depends.CharacterFromPath),
@@ -39,7 +40,8 @@ async def os_char_textures_bind(
 
 @router.post(
     "/optionserver/character/{characterId}/textures/unbind/{resourceType}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_textures_unbind(
         resourceType: enums.MCTextureType,
@@ -60,7 +62,8 @@ async def os_char_textures_unbind(
 
 @router.post(
     "/optionserver/character/create/",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_create(
         createInfo: models.CharacterCreate,
@@ -90,7 +93,8 @@ async def os_char_create(
 
 @router.post(
     "/optionserver/character/delete/{characterId}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_delete(
         account: Account = Depends(depends.AccountFromRequest),
@@ -109,7 +113,8 @@ async def os_char_delete(
 
 @router.post(
     "/optionserver/character/{characterId}/publicStats/transformTo/{public}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_publicStats_transform(
         public: enums.PublicStatus,
@@ -132,7 +137,8 @@ async def os_char_publicStats_transform(
 
 @router.post(
     "/optionserver/resource/{resourceId}/publicStats/transformTo/{public}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_reso_transform_publicStats(
         public: enums.PublicStatus,
@@ -163,7 +169,8 @@ async def os_reso_transform_publicStats(
 
 @router.post(
     "/optionserver/resource/{resourceId}/protectStats/transformTo/{stats}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_reso_transform_protectStats(
         stats: bool,
@@ -195,7 +202,8 @@ async def os_reso_transform_protectStats(
 
 @router.post(
     "/optionserver/resource/delete/{resourceId}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_reso_delete(
         bgTasks: BackgroundTasks,
@@ -232,7 +240,8 @@ async def os_reso_delete(
 
 @router.post(
     "/optionserver/resource/update/{resourceId}",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_reso_update(
         update_info: models.ResourceUpdate,
@@ -262,7 +271,8 @@ async def os_reso_update(
 
 @router.post(
     "/optionserver/character/{characterId}/update/name",
-    dependencies=[Depends(depends.Permissison("Normal"))]
+    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['OptionServer']
 )
 async def os_char_update_name(
         update_info: models.Update,

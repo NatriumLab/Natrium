@@ -17,7 +17,7 @@ from natrium.json_interface import handler as json
 import orjson
 
 def JSONForm(*args, **kwargs) -> Any:
-    async def JSONForm_warpper(formdata: "LongStr" = Form(*args, **kwargs)) -> Any:
+    async def JSONForm_warpper(formdata: str = Form(*args, **kwargs)) -> Any:
         try:
             return json.loads(formdata)
         except:

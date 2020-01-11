@@ -22,7 +22,10 @@ def Save(image, Hash):
 
 @router.post(
     "/amadeus/upload/{name}",
-#    dependencies=[Depends(depends.Permissison("Normal"))]
+#    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['Amadeus'],
+    summary="Resource Upload",
+    description=""
 )
 async def amadeus_upload(
         bgTasks: BackgroundTasks,

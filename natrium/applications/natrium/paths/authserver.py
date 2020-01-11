@@ -17,7 +17,7 @@ from natrium.applications.natrium import depends
 from natrium.util.randoms import String
 from starlette.requests import Request
 
-@router.post("/authserver/")
+@router.post("/authserver/", tags=['AuthServer'])
 async def authserver_authenticate(authinfo: models.AuthenticateRequest):
     with orm.db_session:
         account = orm.select(i for i in Account if i.Email == authinfo.email)
@@ -60,7 +60,7 @@ async def authserver_authenticate(authinfo: models.AuthenticateRequest):
         return result
 
 
-@router.post("/authserver/refresh")
+@router.post("/authserver/refresh", tags=['AuthServer'])
 async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
     with orm.db_session:
         account = Token.Account
@@ -92,7 +92,7 @@ async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
             }
         }
 
-@router.post("/authserver/validate")
+@router.post("/authserver/validate", tags=['AuthServer'])
 async def authserver_validate(
         request: Request,
         status = Depends(depends.TokenStatus)
@@ -108,13 +108,13 @@ async def authserver_validate(
         "status": "alive" if status['status'] == "alive" else "non-alive"
     }
 
-@router.post("/authserver/invalidate")
+@router.post("/authserver/invalidate", tags=['AuthServer'])
 async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
     """注销请求中给出的Token"""
     TokenBucket.delete(token.AccessToken)
     return {"operator": "success"}
 
-@router.post("/authserver/signout")
+@router.post("/authserver/signout", tags=['AuthServer'])
 async def authserver_signout(authinfo: models.AccountAuth):
     with orm.db_session:
         account = orm.select(i for i in Account if i.Email == authinfo.email)

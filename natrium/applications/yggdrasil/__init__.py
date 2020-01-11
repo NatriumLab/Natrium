@@ -9,6 +9,7 @@ from natrium.database.connection import db
 from natrium.database.models import Character
 from pony import orm
 from natrium import cache_pool
+from i18n import t as Ts_
 
 # 设置缓存池
 cache_pool.setup({
@@ -32,7 +33,11 @@ session_server_join = cache_pool.getBucket("yggdrasil.sessionserver.joinserver")
 
 router = APIRouter()
 
-@router.get("/", tags=['yggdrasil'])
+@router.get("/",
+    tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.index.summary"),
+    description=Ts_("apidoc.yggdrasil.index.description")
+)
 async def yggdrasil_index(request: Request):
     return Response({
         "meta": {
@@ -44,7 +49,9 @@ async def yggdrasil_index(request: Request):
         "signaturePublickey": key['public'].export_key().decode()
     })
 
-@router.post("/api/profiles/minecraft", tags=['yggdrasil'])
+@router.post("/api/profiles/minecraft", tags=['Yggdrasil'],
+    summary=Ts_("apidoc.yggdrasil.profilesQuery.summary"),
+    description=Ts_("apidoc.yggdrasil.profilesQuery.description"))
 async def yggdrasil_profiles_query(request: Request):
     data = await request.json()
     data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)

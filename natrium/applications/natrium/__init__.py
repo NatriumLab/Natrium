@@ -6,7 +6,7 @@ from natrium import app
 
 router = APIRouter()
 
-@router.get("/static/picture/resource/{resource}")
+@router.get("/static/picture/resource/{resource}", tags=["Utils"])
 async def static_resource(resource: str):
     return FileResponse(str(Path(f"./assets/resources/{resource}.png").absolute()))
 
