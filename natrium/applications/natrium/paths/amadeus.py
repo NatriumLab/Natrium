@@ -60,7 +60,15 @@ async def amadeus_upload(
     if Private and Protect:
         raise exceptions.DuplicateRegulations()
 
-    image: Image.Image = Image.open(BytesIO(await file.read()))
+    try:
+        image: Image.Image = Image.open(BytesIO(await file.read()))
+    except PIL.UnidentifiedImageError:
+        raise exceptions.BrokenData({
+            "filename": file.filename
+        })
+    finally:
+        file.close()
+
     width, height = image.size
 
     if image.format != "PNG":
