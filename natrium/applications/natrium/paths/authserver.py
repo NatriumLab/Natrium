@@ -22,80 +22,78 @@ from i18n import t as Ts_
     summary=Ts_("apidoc.natrium.authserver.index.summary"),
     description=Ts_("apidoc.natrium.authserver.index.description"))
 async def authserver_authenticate(authinfo: models.AuthenticateRequest):
-    with orm.db_session:
-        account = orm.select(i for i in Account if i.Email == authinfo.email)
-        if not account.exists():
-            raise exceptions.InvalidCredentials()
-        account: Account = account.first()
+    account = orm.select(i for i in Account if i.Email == authinfo.email)
+    if not account.exists():
+        raise exceptions.InvalidCredentials()
+    account: Account = account.first()
 
-        if not VerifyLocks.get(account.Id):
-            VerifyLocks.setByTimedelta(account.Id, "LOCKED")
-        else:
-            raise exceptions.FrequencyLimit()
+    if not VerifyLocks.get(account.Id):
+        VerifyLocks.setByTimedelta(account.Id, "LOCKED")
+    else:
+        raise exceptions.FrequencyLimit()
 
-        AuthentidcateVerifyResult = bcrypt.checkpw(authinfo.password.encode(), account.Password)
-        if not AuthentidcateVerifyResult:
-            raise exceptions.InvalidCredentials()
+    AuthentidcateVerifyResult = bcrypt.checkpw(authinfo.password.encode(), account.Password)
+    if not AuthentidcateVerifyResult:
+        raise exceptions.InvalidCredentials()
 
-        token = Token(account, authinfo.authenticate.clientToken)
-        TokenBucket.setByTimedelta(token.AccessToken, token)
-        
-        result = {
-            "auth": {
-                "accessToken": token.AccessToken.hex,
-                "clientToken": token.ClientToken,
-                "metadata": {
-                    "stages": {
-                        "create": token.CreateAt.rfc2822(),
-                        "alive": token.AliveDate.rfc2822(),
-                        "expire": token.ExpireDate.rfc2822(),
-                    }
+    token = Token(account, authinfo.authenticate.clientToken)
+    TokenBucket.setByTimedelta(token.AccessToken, token)
+    
+    result = {
+        "auth": {
+            "accessToken": token.AccessToken.hex,
+            "clientToken": token.ClientToken,
+            "metadata": {
+                "stages": {
+                    "create": token.CreateAt.rfc2822(),
+                    "alive": token.AliveDate.rfc2822(),
+                    "expire": token.ExpireDate.rfc2822(),
                 }
             }
         }
-        if authinfo.requestAccount:
-            result['account'] = {
-                "id": account.Id.hex,
-                "email": account.Email,
-                "createAt": maya.MayaDT(account.CreatedAt.timestamp()).rfc2822(),
-                "rank": account.Permission
-            }
-        return result
+    }
+    if authinfo.requestAccount:
+        result['account'] = {
+            "id": account.Id.hex,
+            "email": account.Email,
+            "createAt": maya.MayaDT(account.CreatedAt.timestamp()).rfc2822(),
+            "rank": account.Permission
+        }
+    return result
 
 
 @router.post("/authserver/refresh", tags=['AuthServer'],
     summary=Ts_("apidoc.natrium.authserver.refresh.summary"),
     description=Ts_("apidoc.natrium.authserver.refresh.description"))
 async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
-    with orm.db_session:
-        account = Token.Account
+    account = Token.Account
 
-        # 频率限制
-        if not VerifyLocks.get(account.Id):
-            VerifyLocks.setByTimedelta(account.Id, "LOCKED")
-        else:
-            raise exceptions.FrequencyLimit()
+    # 频率限制
+    if not VerifyLocks.get(account.Id):
+        VerifyLocks.setByTimedelta(account.Id, "LOCKED")
+    else:
+        raise exceptions.FrequencyLimit()
 
-        if Token.ClientToken:
-            clientToken = Token.ClientToken
-        else:
-            clientToken = String(16)
-        
-        TokenBucket.delete(old_token.AccessToken)
-        NewToken = Token(account, clientToken)
-        return {
-            "auth": {
-                "accessToken": NewToken.AccessToken.hex,
-                "clientToken": NewToken.ClientToken,
-                "metadata": {
-                    "stages": {
-                        "create": NewToken.CreateAt.rfc2822(),
-                        "alive": NewToken.AliveDate.rfc2822(),
-                        "expire": NewToken.ExpireDate.rfc2822(),
-                    }
+    if Token.ClientToken:
+        clientToken = Token.ClientToken
+    else:
+        clientToken = String(16)
+    
+    TokenBucket.delete(old_token.AccessToken)
+    NewToken = Token(account, clientToken)
+    return {
+        "auth": {
+            "accessToken": NewToken.AccessToken.hex,
+            "clientToken": NewToken.ClientToken,
+            "metadata": {
+                "stages": {
+                    "create": NewToken.CreateAt.rfc2822(),
+                    "alive": NewToken.AliveDate.rfc2822(),
+                    "expire": NewToken.ExpireDate.rfc2822(),
                 }
             }
         }
+    }
 
 @router.post("/authserver/validate", tags=['AuthServer'],
     summary=Ts_("apidoc.natrium.authserver.validate.summary"),
@@ -127,22 +125,20 @@ async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
     summary=Ts_("apidoc.natrium.authserver.signout.summary"),
     description=Ts_("apidoc.natrium.authserver.signout.description"))
 async def authserver_signout(authinfo: models.AccountAuth):
-    with orm.db_session:
-        account = orm.select(i for i in Account if i.Email == authinfo.email)
-        if not account.exists():
-            raise exceptions.InvalidCredentials()
-        account: Account = account.first()
+    account = Account.get(Email=authinfo.email)
+    if not account.exists():
+        raise exceptions.InvalidCredentials()
 
-        if not VerifyLocks.get(account.Id):
-            VerifyLocks.setByTimedelta(account.Id, "LOCKED")
-        else:
-            raise exceptions.FrequencyLimit()
+    if not VerifyLocks.get(account.Id):
+        VerifyLocks.setByTimedelta(account.Id, "LOCKED")
+    else:
+        raise exceptions.FrequencyLimit()
 
-        AuthentidcateVerifyResult = bcrypt.checkpw(authinfo.password.encode(), account.Password)
-        if not AuthentidcateVerifyResult:
-            raise exceptions.InvalidCredentials()
-    
-        for i in TokenBucket:
-            if TokenBucket.get(i).Account.Id == account.Id:
-                TokenBucket.delete(i)
-        return {"operator": "success"}
+    AuthentidcateVerifyResult = bcrypt.checkpw(authinfo.password.encode(), account.Password)
+    if not AuthentidcateVerifyResult:
+        raise exceptions.InvalidCredentials()
+
+    for i in TokenBucket:
+        if TokenBucket.get(i).Account.Id == account.Id:
+            TokenBucket.delete(i)
+    return {"operator": "success"}

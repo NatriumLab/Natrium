@@ -63,7 +63,7 @@ async def amadeus_upload(
     try:
         image: Image.Image = Image.open(BytesIO(await file.read()))
     except PIL.UnidentifiedImageError:
-        raise exceptions.BrokenData({
+        raise exceptions.NonCompliantMsg({
             "filename": file.filename
         })
     finally:
@@ -90,66 +90,53 @@ async def amadeus_upload(
 
     pictureContentHash = hashing.PicHash(image)
 
-    with orm.db_session:
-        attempt_select = orm.select(i for i in Resource if i.PicHash == pictureContentHash)
-        if attempt_select.exists():
-            # 如果真的有上传的数据一样的
-            Original = False
-            for i in attempt_select[:]:
-                # 询问数据库, 找到原始作者
-                # 考虑加入uploader找寻.
-                if not i.Origin:
-                    OriginalResource = i
-                    OriginalUploader = i.Owner
-                    break
+    attempt_select = orm.select(i for i in Resource if i.PicHash == pictureContentHash)
+    if attempt_select.exists():
+        # 如果真的有上传的数据一样的
+        Original = False
+        for i in attempt_select[:]:
+            # 询问数据库, 找到原始作者
+            # 考虑加入uploader找寻.
+            if not i.Origin:
+                OriginalResource = i
+                OriginalUploader = i.Owner
+                break
 
-            if not OriginalResource or\
-                not OriginalUploader: # 判断是否找到了, 如果没找到, 说明数据库信息受损
-                raise exceptions.BrokenData({
-                    "PictureHash": pictureContentHash,
-                    "ExceptionRaisedTime": maya.now()
-                })
-            # 如果有attempt_select, 就一定有一个origin.
+        if not OriginalResource or\
+            not OriginalUploader: # 判断是否找到了, 如果没找到, 说明数据库信息受损
+            raise exceptions.BrokenData({
+                "PictureHash": pictureContentHash,
+                "ExceptionRaisedTime": maya.now()
+            })
 
-            # 判断是否是原作者闲着没事干, 重新上传了一个.
-            if OriginalUploader.Id == uploader.Id:
-                raise exceptions.OccupyExistedAddress({
-                    "originalResource": {
-                        "id": OriginalResource.Id,
-                        "owner": OriginalUploader.Id
-                    },
-                    "uploader": {
-                        "id": uploader.Id
-                    }
-                })
-            else: # ...或者是其他人, 这种情况我们需要特殊处理
-                # 由于Protect的受限度较低, 故放在上面点.
-                if OriginalResource.Protect:
-                    if Protect or Private:
-                        raise exceptions.PermissionDenied({
-                            "originalResource": {
-                                "id": OriginalResource.Id,
-                                "owner": OriginalUploader.Id,
-                                "protect": OriginalResource.Protect,
-                                "private": OriginalResource.Private
-                            },
-                            "uploader": {
-                                "id": uploader.Id
-                            }
-                        })
-                    else: # 但是你本来就可以设为这个啊, 为啥要自己整一路去?
-                        raise exceptions.OccupyExistedAddress({
-                            "originalResource": {
-                                "id": OriginalResource.Id,
-                                "owner": OriginalUploader.Id,
-                                "protect": OriginalResource.Protect,
-                            },
-                            "uploader": {
-                                "id": uploader.Id
-                            }
-                        })
-                elif OriginalResource.IsPrivate:
-                    # 如果私有, 则不允许任何人上传/使用/设保护/私有等
+        # 如果有attempt_select, 就一定有一个origin.
+        # 判断是否是原作者闲着没事干, 重新上传了一个.
+        if OriginalUploader.Id == uploader.Id:
+            raise exceptions.OccupyExistedAddress({
+                "originalResource": {
+                    "id": OriginalResource.Id,
+                    "owner": OriginalUploader.Id
+                },
+                "uploader": {
+                    "id": uploader.Id
+                }
+            })
+        else: # ...或者是其他人, 这种情况我们需要特殊处理
+            # 由于Protect的受限度较低, 故放在上面点.
+            if OriginalResource.Protect:
+                if Protect or Private:
+                    raise exceptions.PermissionDenied({
+                        "originalResource": {
+                            "id": OriginalResource.Id,
+                            "owner": OriginalUploader.Id,
+                            "protect": OriginalResource.Protect,
+                            "private": OriginalResource.Private
+                        },
+                        "uploader": {
+                            "id": uploader.Id
+                        }
+                    })
+                else: # 但是你本来就可以设为这个啊, 为啥要自己整一路去?
                     raise exceptions.OccupyExistedAddress({
                         "originalResource": {
                             "id": OriginalResource.Id,
@@ -160,39 +147,50 @@ async def amadeus_upload(
                             "id": uploader.Id
                         }
                     })
+            elif OriginalResource.IsPrivate:
+                # 如果私有, 则不允许任何人上传/使用/设保护/私有等
+                raise exceptions.OccupyExistedAddress({
+                    "originalResource": {
+                        "id": OriginalResource.Id,
+                        "owner": OriginalUploader.Id,
+                        "protect": OriginalResource.Protect,
+                    },
+                    "uploader": {
+                        "id": uploader.Id
+                    }
+                })
+            else:
+                # 你什么私有保护什么的都没开? 别开你自己的私有保护什么的就OK.
+                if Protect or Private:
+                    raise exceptions.PermissionDenied({
+                        "originalResource": {
+                            "id": OriginalResource.Id,
+                            "owner": OriginalUploader.Id
+                        },
+                        "uploader": {
+                            "id": uploader.Id
+                        },
+                        "options": {
+                            'protect': Protect,
+                            "private": Private
+                        }
+                    })
                 else:
-                    # 你什么私有保护什么的都没开? 别开你自己的私有保护什么的就OK.
-                    if Protect or Private:
-                        raise exceptions.PermissionDenied({
-                            "originalResource": {
-                                "id": OriginalResource.Id,
-                                "owner": OriginalUploader.Id
+                    # 找寻上传者是否也曾经上传过该材质
+                    assert_the_same = orm.select(i for i in Resource\
+                        if i.PicHash == pictureContentHash and \
+                        i.Owner.Id == uploader.Id)
+                    if assert_the_same.exists():
+                        ats_first: Resource = assert_the_same.first()
+                        raise exceptions.OccupyExistedAddress({
+                            "ownedResource": {
+                                "id": ats_first.Id,
+                                "name": ats_first.Name
                             },
                             "uploader": {
                                 "id": uploader.Id
-                            },
-                            "options": {
-                                'protect': Protect,
-                                "private": Private
                             }
                         })
-                    else:
-                        # 找寻上传者是否也曾经上传过该材质
-                        assert_the_same = orm.select(i for i in Resource\
-                            if i.PicHash == pictureContentHash and \
-                            i.Owner.Id == uploader.Id)
-                        if assert_the_same.exists():
-                            ats_first: Resource = assert_the_same.first()
-                            raise exceptions.OccupyExistedAddress({
-                                "ownedResource": {
-                                    "id": ats_first.Id,
-                                    "name": ats_first.Name
-                                },
-                                "uploader": {
-                                    "id": uploader.Id
-                                }
-                            })
-                        
 
         if Model == "auto":
             Model = ['steve', 'alex'][skin.isSilmSkin(image)]

@@ -28,18 +28,15 @@ async def os_char_textures_bind(
     ):
     if resource.IsPrivate and resource.Owner != account.Id:
         raise exceptions.PermissionDenied()
-    with orm.db_session:
-        character = Character.get(Id=character.Id)
-        resource = Resource.get(Id=resource.Id)
 
-        if resource.Type == 'skin':
-            character.Skin = resource
-        elif resource.Type == "cape":
-            character.Cape = resource
-        character.update_UpdatedAt()
+    if resource.Type == 'skin':
+        character.Skin = resource
+    elif resource.Type == "cape":
+        character.Cape = resource
+    character.update_UpdatedAt()
 
-        orm.commit()
-        return character.format_self()
+    orm.commit()
+    return character.format_self()
 
 @router.post(
     "/optionserver/character/{characterId}/textures/unbind/{resourceType}",
@@ -53,17 +50,14 @@ async def os_char_textures_unbind(
         character: Character = Depends(depends.CharacterFromPath),
         account: Account = Depends(depends.AccountFromRequest),
     ):
-    with orm.db_session:
-        character = Character.get(Id=character.Id)
-
-        if resourceType == enums.MCTextureType.skin:
-            character.Skin = None
-        elif resourceType == enums.MCTextureType.cape:
-            character.Cape = None
-        character.update_UpdatedAt()
-        
-        orm.commit()
-        return character.format_self()
+    if resourceType == enums.MCTextureType.skin:
+        character.Skin = None
+    elif resourceType == enums.MCTextureType.cape:
+        character.Cape = None
+    character.update_UpdatedAt()
+    
+    orm.commit()
+    return character.format_self()
 
 @router.post(
     "/optionserver/character/create/",
@@ -79,24 +73,22 @@ async def os_char_create(
     if not res.verify(createInfo.create.name, res.CharacterName):
         raise exceptions.NonCompliantMsg()
 
-    with orm.db_session:
-        if Character.get(PlayerName=createInfo.create.name):
-            raise exceptions.OccupyExistedAddress()
+    if Character.get(PlayerName=createInfo.create.name):
+        raise exceptions.OccupyExistedAddress()
 
-        account = Account.get(Id=account.Id)
+    account = Account.get(Id=account.Id)
 
-        character = Character(
-            PlayerId=OfflinePlayerUUID(createInfo.create.name),
-            PlayerName=createInfo.create.name,
+    character = Character(
+        PlayerId=OfflinePlayerUUID(createInfo.create.name),
+        PlayerName=createInfo.create.name,
+        Owner=account,
+        CreatedAt=dt.now(),
+        UpdatedAt=dt.now(),
+        Public=createInfo.create.public
+    )
 
-            Owner=account,
-            CreatedAt=dt.now(),
-            UpdatedAt=dt.now(),
-
-            Public=createInfo.create.public
-        )
-        orm.commit()
-        return character.format_self()
+    orm.commit()
+    return character.format_self()
 
 @router.post(
     "/optionserver/character/delete/{characterId}",
@@ -111,8 +103,8 @@ async def os_char_delete(
     ):
     if character.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
-    with orm.db_session:
-        character = Character.get(Id=character.Id).delete()
+
+    character.delete()
     return {
         "operator": "success",
         "metadata": {
@@ -134,11 +126,11 @@ async def os_char_publicStats_transform(
     ):
     if character.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
-    with orm.db_session:
-        character = Character.get(Id=character.Id)
-        character.Public = public == enums.PublicStatus.Public
-        character.update_UpdatedAt()
-        orm.commit()
+
+    character.Public = public == enums.PublicStatus.Public
+    character.update_UpdatedAt()
+    orm.commit()
+
     return {
         "operator": "success",
         "metadata": {
@@ -160,8 +152,8 @@ async def os_reso_transform_publicStats(
     ):
     if resource.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
+
     with orm.db_session:
-        resource = Resource.get(Id=resource.Id)
         # 检查是否有origin
         if resource.Origin:
             if resource.Origin.Protect or resource.Origin.Private:
@@ -173,6 +165,7 @@ async def os_reso_transform_publicStats(
         if public == "private":
             resource.Protect = False
         orm.commit()
+
     return {
         "operator": "success",
         "metadata": {
@@ -195,7 +188,6 @@ async def os_reso_transform_protectStats(
     if resource.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
     with orm.db_session:
-        resource = Resource.get(Id=resource.Id)
         # 检查是否有origin
         if resource.Origin:
             if resource.Origin.Protect or resource.Origin.Private:
@@ -231,7 +223,6 @@ async def os_reso_delete(
     if resource.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
     with orm.db_session:
-        resource = Resource.get(Id=resource.Id)
         # 检查其fork, 因为该资源被删除, 所以资源的各个Fork也应该被删除.
         if resource.Forks[:]:
             for i in resource.Forks:
@@ -270,7 +261,6 @@ async def os_reso_update(
     if resource.Owner.Id != account.Id:
         raise exceptions.PermissionDenied()
     with orm.db_session:
-        resource = Resource.get(Id=resource.Id)
         try:
             if update_info.update.name:
                 resource.Name = update_info.update.name
@@ -320,7 +310,6 @@ async def os_char_update_name(
         if Character.get(PlayerName=update_info.update.name):
             raise exceptions.OccupyExistedAddress()
 
-        character = Character.get(Id=character.Id)
         character.PlayerName = update_info.update.name
         character.PlayerId = OfflinePlayerUUID(update_info.update.name)
         character.update_UpdatedAt()
