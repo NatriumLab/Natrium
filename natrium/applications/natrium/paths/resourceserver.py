@@ -67,6 +67,12 @@ async def resources_character_id(
             raise exceptions.NoSuchResourceException()
         character: Character = character.first()
 
+        if not character.Public:
+            if not optionalAccount:
+                raise exceptions.NoSuchResourceException()
+            if character.Owner.Id != optionalAccount.Id:
+                raise exceptions.NoSuchResourceException()
+
         result = {
             "id": character.Id,
             "player": {
@@ -126,9 +132,10 @@ async def resources_resource_id(
     ):
     with orm.db_session:
         resource: Resource = Resource.get(Id=resource.Id)
+
         if resource.IsPrivate and \
                     resource.Owner.Id != (optionalAccount.Id if optionalAccount else None):
-            raise exceptions.PermissionDenied()
+            raise exceptions.NoSuchResourceException()
         result = {
             "id": resource.Id,
             "name": resource.Name,
@@ -144,7 +151,7 @@ async def resources_resource_id(
 
 @router.post("/resourceserver/resource/{resourceId}/forks", tags=['ResourceServer'],
     summary=Ts_("apidoc.natrium.resourceserver.resource.forks.summary"),
-    description=Ts_("apidoc.natrium.resourceserver.resource.forks..description"))
+    description=Ts_("apidoc.natrium.resourceserver.resource.forks.description"))
 async def resources_resource_forks(
         resource: Resource = Depends(depends.ResourceFromPath),
         Account: Account = Depends(depends.AccountFromRequest)

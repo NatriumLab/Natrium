@@ -76,3 +76,36 @@ zh_cn:
 
   natrium.optionserver.character.rename.summary: Natrium Optionserver 更改角色游戏名称
   natrium.optionserver.character.rename.description: 更改角色的名称而不需要重新创建角色(PlayerID也会改, 并且保证不会与已有的角色重名)
+
+  natrium.resourceserver.account.guest.summary: Natrium Resourceserver 查询用户公开信息
+  natrium.resourceserver.account.guest.description: 不带令牌查询用户的公开信息
+
+  natrium.resourceserver.account.certified.summary: Natrium 鉴权并查询用户信息
+  natrium.resourceserver.account.certified.description: 尝试使用令牌查询用户信息(若给出的令牌所绑定的用户的ID与需查询的用户的ID不符合, 则返回其公开信息)
+
+  natrium.resourceserver.character.guest.summary: Natrium Resourceserver 查询公开角色
+  natrium.resourceserver.character.guest.description: 尝试查询用户信息(如果该用户是公开的)
+
+  natrium.resourceserver.character.certified.summary: Natrium Resourceserver 鉴权并查询用户信息
+  natrium.resourceserver.character.certified.description: 尝试匹配所给出的令牌所绑定的用户与角色的所有者, 若成功返回角色信息, 否则当没有这个角色存在
+
+  natrium.resourceserver.resource.guest.summary: Natrium Resourceserver 查询公开资源信息
+  natrium.resourceserver.resource.guest.description: 不带令牌查询公开的资源的信息
+
+  natrium.resourceserver.resource.certified.summary: Natrium Resourceserver 鉴权并查询资源信息
+  natrium.resourceserver.resource.certified.description: 尝试匹配所给出的令牌所绑定的用户与资源的拥有者, 若成功返回资源信息, 否则当没有这个资源存在
+
+  natrium.resourceserver.resource.forks.summary: Natrium Resourceserver 查询资源分支
+  natrium.resourceserver.resource.forks.description: 鉴权并查询资源的分支
+
+  natrium.resourceserver.resource.protectStats.summary: Natrium Resourceserver 查询资源保护状态
+  natrium.resourceserver.resource.protectStats.description: 鉴权并查询资源的保护状态
+
+  natrium.resourceserver.resource.publicStats.summary: Natrium Resourceserver 查询资源的公开可见性
+  natrium.resourceserver.resource.publicStats.description: 鉴权并查询资源的公开可见性
+
+  natrium.resourceserver.character.publicStats.summary: Natrium Resourceserver 查询角色的公开可见性
+  natrium.resourceserver.character.publicStats.description: 鉴权并查询角色的公开可见性
+
+  utils.static_resource.summary: Utils 访问静态资源
+  utils.static_resource.description: 自给出的静态资源名称中返回静态资源内容
