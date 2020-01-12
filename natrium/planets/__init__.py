@@ -1,0 +1,1 @@
+import natrium.planets.static_resource

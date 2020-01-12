@@ -21,6 +21,14 @@ def include_sub():
     app.include_router(Yggdrasil, prefix="/api/yggdrasil")
     app.include_router(Natrium, prefix="/natrium")
 
+@IIFE()
+def include_middlewares():
+    import natrium.middlewares
+
+@IIFE()
+def include_planets():
+    import natrium.planets
+
 def run():
     import uvicorn
     try:
