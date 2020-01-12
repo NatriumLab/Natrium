@@ -16,8 +16,11 @@ import maya
 from natrium.applications.natrium import depends
 from natrium.util.randoms import String
 from starlette.requests import Request
+from i18n import t as Ts_
 
-@router.post("/authserver/", tags=['AuthServer'])
+@router.post("/authserver/", tags=['AuthServer'],
+    summary=Ts_("apidoc.natrium.authserver.index.summary"),
+    description=Ts_("apidoc.natrium.authserver.index.description"))
 async def authserver_authenticate(authinfo: models.AuthenticateRequest):
     with orm.db_session:
         account = orm.select(i for i in Account if i.Email == authinfo.email)
@@ -60,7 +63,9 @@ async def authserver_authenticate(authinfo: models.AuthenticateRequest):
         return result
 
 
-@router.post("/authserver/refresh", tags=['AuthServer'])
+@router.post("/authserver/refresh", tags=['AuthServer'],
+    summary=Ts_("apidoc.natrium.authserver.refresh.summary"),
+    description=Ts_("apidoc.natrium.authserver.refresh.description"))
 async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
     with orm.db_session:
         account = Token.Account
@@ -92,7 +97,9 @@ async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
             }
         }
 
-@router.post("/authserver/validate", tags=['AuthServer'])
+@router.post("/authserver/validate", tags=['AuthServer'],
+    summary=Ts_("apidoc.natrium.authserver.validate.summary"),
+    description=Ts_("apidoc.natrium.authserver.validate.description"))
 async def authserver_validate(
         request: Request,
         status = Depends(depends.TokenStatus)
@@ -108,13 +115,17 @@ async def authserver_validate(
         "status": "alive" if status['status'] == "alive" else "non-alive"
     }
 
-@router.post("/authserver/invalidate", tags=['AuthServer'])
+@router.post("/authserver/invalidate", tags=['AuthServer'],
+    summary=Ts_("apidoc.natrium.authserver.invalidate.summary"),
+    description=Ts_("apidoc.natrium.authserver.invalidate.description"))
 async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
     """注销请求中给出的Token"""
     TokenBucket.delete(token.AccessToken)
     return {"operator": "success"}
 
-@router.post("/authserver/signout", tags=['AuthServer'])
+@router.post("/authserver/signout", tags=['AuthServer'],
+    summary=Ts_("apidoc.natrium.authserver.signout.summary"),
+    description=Ts_("apidoc.natrium.authserver.signout.description"))
 async def authserver_signout(authinfo: models.AccountAuth):
     with orm.db_session:
         account = orm.select(i for i in Account if i.Email == authinfo.email)

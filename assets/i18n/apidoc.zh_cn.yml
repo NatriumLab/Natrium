@@ -27,4 +27,52 @@ zh_cn:
   yggdrasil.sessionserver.hasJoined.description: 尝试从服务端获取欲连接的客户端信息, 并获取其角色信息
 
   yggdrasil.sessionserver.profileQuery.summary: Yggdrasil Sessionserver 查询单个用户信息
-  yggdrasil.sessionserver.profileQuery.description: 从服务器拉取角色信息及其已绑定的材质信息
+  yggdrasil.sessionserver.profileQuery.description: 从服务端拉取角色信息及其已绑定的材质信息
+
+  natrium.amadeus_uploader.summary: Natrium Amadeus 资源创建及内容上传
+  natrium.amadeus_uploader.description: 上传图像文件并在服务端以给出的信息注册资源
+
+  natrium.authserver.index.summary: Natrium Authserver 获取用户令牌
+  natrium.authserver.index.description: 获取可用于更新用户信息(包括CRUD行为)的身份认证令牌
+
+  natrium.authserver.refresh.summary: Natrium Authserver Refresh 刷新用户令牌
+  natrium.authserver.refresh.description: 注销给出的可刷新令牌, 并重新获取新的可用用户令牌
+
+  natrium.authserver.validate.summary: Natrium Authserver Validate 获取令牌状态
+  natrium.authserver.validate.description: 验证或获取给出的令牌状态
+
+  natrium.authserver.invalidate.summary: Natrium Authserver Invalidate 注销令牌
+  natrium.authserver.invalidate.description: 注销给出的可用用户令牌
+
+  natrium.authserver.signout.summary: Natrium Authserver Signout 用户登出
+  natrium.authserver.signout.description: 验证所给出的用户认证信息, 注销在用户下的**所有**令牌(不包括Yggdrasil Token)
+
+  natrium.optionserver.character.textures.bind.summary: Natrium Optionserver 角色绑定材质
+  natrium.optionserver.character.textures.bind.description: 尝试给给出的角色绑定所描述的材质
+
+  natrium.optionserver.character.textures.unbind.summary: Natrium Optionserver 角色解除绑定材质
+  natrium.optionserver.character.textures.unbind.description: 尝试使给出的角色解除与其已绑定的某个材质的关系
+
+  natrium.optionserver.character.create.summary: Natrium Optionserver 创建角色
+  natrium.optionserver.character.create.description: 认证令牌并在令牌所绑定的用户的命名空间下创建角色
+
+  natrium.optionserver.character.delete.summary: Natrium Optionserver 删除角色
+  natrium.optionserver.character.delete.description: 尝试删除所指定的角色
+
+  natrium.optionserver.character.publicStats.transformTo.summary: Natrium Optionserver 更改角色公开可见性
+  natrium.optionserver.character.publicStats.transformTo.description: 更改所给出的角色的公开可见性
+
+  natrium.optionserver.resource.publicStats.transformTo.summary: Natrium Optionserver 更改资源公开可见性
+  natrium.optionserver.resource.publicStats.transformTo.description: 更改所指向的资源的公开可见性
+
+  natrium.optionserver.resource.protectStats.transformTo.summary: Natrium Optionserver 管理资源保护
+  natrium.optionserver.resource.protectStats.transformTo.description: 开启/关闭所指向的资源的保护模式
+
+  natrium.optionserver.resource.delete.summary: Natrium Optionserver 删除资源
+  natrium.optionserver.resource.delete.description: 验证拥有者并删除所指向的资源
+
+  natrium.optionserver.resource.update.summary: Natrium Optionserver 更新资源信息
+  natrium.optionserver.resource.update.description: 批量更新资源信息, 包括名称, 资源类型, 资源模型等(具有限制性)
+
+  natrium.optionserver.character.rename.summary: Natrium Optionserver 更改角色游戏名称
+  natrium.optionserver.character.rename.description: 更改角色的名称而不需要重新创建角色(PlayerID也会改, 并且保证不会与已有的角色重名)

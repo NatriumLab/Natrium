@@ -16,6 +16,7 @@ import PIL
 from natrium.util import enums, skin, hashing, res
 from pathlib import Path
 import maya
+from i18n import t as Ts_
 
 def Save(image, Hash):
     image.save(f"./assets/resources/{Hash}.png", "PNG")
@@ -24,8 +25,8 @@ def Save(image, Hash):
     "/amadeus/upload/{name}",
 #    dependencies=[Depends(depends.Permissison("Normal"))],
     tags=['Amadeus'],
-    summary="Resource Upload",
-    description=""
+    summary=Ts_("apidoc.natrium.amadeus_uploader.summary"),
+    description=Ts_("apidoc.natrium.amadeus_uploader.description")
 )
 async def amadeus_upload(
         bgTasks: BackgroundTasks,
