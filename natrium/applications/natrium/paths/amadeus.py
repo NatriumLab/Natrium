@@ -60,8 +60,16 @@ async def amadeus_upload(
     if Private and Protect:
         raise exceptions.DuplicateRegulations()
 
-    image: Image = Image.open(BytesIO(await file.read()))
+    image: Image.Image = Image.open(BytesIO(await file.read()))
     width, height = image.size
+
+    if image.format != "PNG":
+        raise exceptions.NonCompliantMsg({
+            "image.format": {
+                "value": image.format,
+                "assert": "PNG"
+            }
+        })
 
     if height > config['natrium']['upload']['picture-size']['height'] or\
         width > config['natrium']['upload']['picture-size']['width']:
