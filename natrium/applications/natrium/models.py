@@ -1,7 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional
 import uuid
+from typing import Optional
+
+from pydantic import BaseModel
+
 from natrium.util import enums
+
 
 class AuthenticateInfo(BaseModel):
     accessToken: str

@@ -1,12 +1,15 @@
-from fastapi import Depends
-from .. import depends
-from .. import router
-from .. import exceptions
 import uuid
-from pony import orm
 from typing import Optional
-from natrium.database.models import Account, Resource, Character
+
+from fastapi import Depends
 from i18n import t as Ts_
+from pony import orm
+
+from natrium.database.models import Account, Character, Resource
+from natrium.planets.exceptions import natrium as exceptions
+
+from .. import depends, router
+
 
 @router.get("/resourceserver/account/{accountId}", tags=['ResourceServer'],
     summary=Ts_("apidoc.natrium.resourceserver.account.guest.summary"),

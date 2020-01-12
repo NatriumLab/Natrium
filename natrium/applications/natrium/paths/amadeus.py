@@ -1,22 +1,23 @@
 # for <Steins;Gate>'s Makise Kurisu, el psy congroo :)
-from fastapi import UploadFile, File, BackgroundTasks, Query
-from fastapi import Depends
-from .. import depends
-from .. import router
-from .. import exceptions
 import uuid
-from pony import orm
-from typing import Optional
-from natrium.database.models import Account, Resource, Character
-from .. import models
-from PIL import Image, ImageDraw
 from io import BytesIO
-from conf import config
-import PIL
-from natrium.util import enums, skin, hashing, res
 from pathlib import Path
+from typing import Optional
+
 import maya
+import PIL
+from fastapi import BackgroundTasks, Depends, File, Query, UploadFile
 from i18n import t as Ts_
+from PIL import Image, ImageDraw
+from pony import orm
+
+from conf import config
+from natrium.database.models import Account, Character, Resource
+from natrium.planets.exceptions import natrium as exceptions
+from natrium.util import enums, hashing, res, skin
+
+from .. import depends, models, router
+
 
 def Save(image, Hash):
     image.save(f"./assets/resources/{Hash}.png", "PNG")
@@ -212,4 +213,3 @@ async def amadeus_upload(
             "operator": "success",
             "metadata": resource.format_self(requestHash=True)
         }
-

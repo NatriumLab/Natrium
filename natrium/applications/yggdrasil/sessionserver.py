@@ -1,18 +1,20 @@
-from natrium.applications.yggdrasil import router
-from conf import config
-from starlette.responses import JSONResponse as Response
-from starlette.requests import Request
-from urllib.parse import parse_qs, urlencode, urlparse
-from natrium.util.sign import key
-from functools import reduce
-from natrium.database.models import Character, Account, Resource
-from natrium.database.connection import db
-from pony import orm
-from .utils import error_handle
-from natrium.applications.yggdrasil import exceptions, session_server_join
-from natrium.applications.yggdrasil.models import Token
 import uuid
+from functools import reduce
+from urllib.parse import parse_qs, urlencode, urlparse
+
 from i18n import t as Ts_
+from pony import orm
+from starlette.requests import Request
+from starlette.responses import JSONResponse as Response
+
+from conf import config
+from natrium.applications.yggdrasil import router, session_server_join
+from natrium.applications.yggdrasil.models import Token
+from natrium.database.connection import db
+from natrium.database.models import Account, Character, Resource
+from natrium.planets.exceptions import yggdrasil as exceptions
+from natrium.util.sign import key
+
 
 @router.post("/sessionserver/session/minecraft/join", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.sessionserver.joinServer.summary"),
@@ -20,19 +22,19 @@ from i18n import t as Ts_
 async def session_minecraft_join(request: Request):
     data = await request.json()
     token = Token.getToken(data.get("accessToken"))
-    if not token:
-        return error_handle(exceptions.InvalidToken())
-    if not token.is_alived:
-        return error_handle(exceptions.InvalidToken())
-    if not token.Character:
-        return error_handle(exceptions.InvalidToken())
+    if not (bool(token) and any([
+        not token.Character,
+        not token.is_alived,
+    ])):
+        raise exceptions.InvalidToken()
+
     with orm.db_session:
         result = orm.select(i for i in Character if i.Id == token.Character.Id)
         if not result.exists():
-            return error_handle(exceptions.InvalidToken())
+            raise exceptions.InvalidToken()
         result: Character = result.first()
         if data.get("selectedProfile") != result.PlayerId.hex:
-            return error_handle(exceptions.InvalidToken())
+            raise exceptions.InvalidToken()
         session_server_join.setByTimedelta(data.get("serverId"), {
             "token": token,
             "character": result.FormatCharacter(Properties=True, auto=True),

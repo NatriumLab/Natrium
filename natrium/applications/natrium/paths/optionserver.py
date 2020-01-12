@@ -1,18 +1,18 @@
-from fastapi import Depends, BackgroundTasks
-from .. import depends
-from .. import router
-from .. import exceptions
 import uuid
-from pony import orm
-from typing import Optional
-from natrium.database.models import Account, Resource, Character
-from natrium.util import enums
-from .. import models
-from .. import resource_manager
-from natrium.util import res
-from natrium.util.hashing import OfflinePlayerUUID
 from datetime import datetime as dt
+from typing import Optional
+
+from fastapi import BackgroundTasks, Depends
 from i18n import t as Ts_
+from pony import orm
+
+from natrium.database.models import Account, Character, Resource
+from natrium.planets.exceptions import natrium as exceptions
+from natrium.util import enums, res
+from natrium.util.hashing import OfflinePlayerUUID
+
+from .. import depends, models, resource_manager, router
+
 
 @router.post(
     "/optionserver/character/{characterId}/textures/bind/{resourceId}",

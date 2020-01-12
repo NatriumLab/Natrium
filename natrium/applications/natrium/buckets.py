@@ -1,5 +1,5 @@
-from natrium import cache_pool
 from conf import config
+from natrium import cache_pool
 from natrium.util.objective_dict import ObjectiveDict
 
 Config = ObjectiveDict(config).natrium
