@@ -12,7 +12,7 @@ from natrium.util.passwd import verify_passwd
 from natrium.util.randoms import String
 
 from natrium.planets.exceptions import natrium as exceptions
-from .buckets import TokenBucket
+from natrium.planets.buckets.natrium import TokenBucket
 
 config = ObjectiveDict(config)
 

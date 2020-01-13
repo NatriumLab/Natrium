@@ -1,8 +1,11 @@
-from conf import config
 import uuid
+from typing import List, Optional
+
 import maya
-from natrium.applications.yggdrasil import auth_token_pool
-from typing import Optional, List
+
+from conf import config
+from natrium.planets.buckets.yggdrasil import auth_token_pool
+
 
 class Token(object):
     Account = None
@@ -14,7 +17,7 @@ class Token(object):
     AccessToken = None
     ClientToken = None
 
-    def __init__(self, Account, Character=None, ClientToken=None,):
+    def __init__(self, Account, Character=None, ClientToken=None):
         self.AccessToken = uuid.uuid4()
         if ClientToken:
             self.ClientToken = ClientToken
@@ -35,8 +38,8 @@ class Token(object):
             return False
 
     @staticmethod
-    def getToken(AccessToken: str, ClientToken: Optional[str] = None):
-        r = auth_token_pool.get(uuid.UUID(AccessToken))
+    def getToken(AccessToken: uuid.UUID, ClientToken: Optional[str] = None):
+        r = auth_token_pool.get(AccessToken)
         if not r:
             return None
         if ClientToken:

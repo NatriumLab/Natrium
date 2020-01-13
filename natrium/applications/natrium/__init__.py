@@ -1,13 +1,10 @@
 from fastapi import APIRouter
-from i18n import t as Ts_
-from pony import orm
 from starlette.requests import Request
 from starlette.responses import FileResponse
 
-import natrium.applications.natrium.buckets
+import natrium.planets.buckets.natrium
 
 from natrium import app
-from .depends import JSONForm
 
 router = APIRouter()
 

@@ -1,4 +1,4 @@
-from starlette.responses import Response
+from starlette.responses import JSONResponse as Response
 
 class OriginException(Exception):
     NoAnyMoreConfiure = False

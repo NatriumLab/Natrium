@@ -8,10 +8,11 @@ from pony import orm
 
 from natrium.database.models import Account, Character, Resource
 from natrium.planets.exceptions import natrium as exceptions
+from natrium.planets.models.request import natrium as models
 from natrium.util import enums, res
 from natrium.util.hashing import OfflinePlayerUUID
 
-from .. import depends, models, resource_manager, router
+from .. import depends, resource_manager, router
 
 
 @router.post(
