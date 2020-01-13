@@ -21,7 +21,8 @@ from natrium.planets.models.request import yggdrasil as RModels
 
 @router.post("/authserver/authenticate", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.authserver.authenticate.summary"),
-    description=Ts_("apidoc.yggdrasil.authserver.authenticate.description"))
+    description=Ts_("apidoc.yggdrasil.authserver.authenticate.description")
+)
 async def authenticate(info: RModels.Authserver_Authenticate):
     user: Account = Account.get(Email=info.username)
     if not user:
@@ -61,7 +62,8 @@ async def authenticate(info: RModels.Authserver_Authenticate):
 
 @router.post("/authserver/refresh", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.authserver.refresh.summary"),
-    description=Ts_("apidoc.yggdrasil.authserver.refresh.description"))
+    description=Ts_("apidoc.yggdrasil.authserver.refresh.description")
+)
 async def refresh(info: RModels.Authserver_Refresh):
     origin_token = Token.getToken(info.accessToken, ClientToken=info.clientToken)
 
@@ -121,7 +123,8 @@ async def refresh(info: RModels.Authserver_Refresh):
 
 @router.post("/authserver/validate", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.authserver.validate.summary"),
-    description=Ts_("apidoc.yggdrasil.authserver.validate.description"))
+    description=Ts_("apidoc.yggdrasil.authserver.validate.description")
+)
 async def validate(info: RModels.Authserver_Validate):
     origin_token = Token.getToken(info.accessToken, ClientToken=info.clientToken)
     if not origin_token:
@@ -134,7 +137,8 @@ async def validate(info: RModels.Authserver_Validate):
 
 @router.post("/authserver/invalidate", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.authserver.invalidate.summary"),
-    description=Ts_("apidoc.yggdrasil.authserver.invalidate.description"))
+    description=Ts_("apidoc.yggdrasil.authserver.invalidate.description")
+)
 async def invalidate(info: RModels.Authserver_Invalidate):
     """注销请求中给出的Token"""
     origin_token = Token.getToken(info.accessToken, ClientToken=info.clientToken)
@@ -153,7 +157,8 @@ async def invalidate(info: RModels.Authserver_Invalidate):
 
 @router.post("/authserver/signout", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.authserver.signout.summary"),
-    description=Ts_("apidoc.yggdrasil.authserver.signout.description"))
+    description=Ts_("apidoc.yggdrasil.authserver.signout.description"),
+)
 async def signout(info: RModels.Authserver_Signout):
     user: Account = Account.get(Email=info.username)
     if not user:

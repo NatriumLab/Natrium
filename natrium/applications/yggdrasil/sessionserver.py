@@ -16,11 +16,12 @@ from natrium.database.models import Account, Character, Resource
 from natrium.planets.exceptions import yggdrasil as exceptions
 from natrium.util.sign import key
 from natrium.planets.models.request import yggdrasil as RModels
-
+from pydantic import IPvAnyAddress
 
 @router.post("/sessionserver/session/minecraft/join", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.sessionserver.joinServer.summary"),
-    description=Ts_("apidoc.yggdrasil.sessionserver.joinServer.description"))
+    description=Ts_("apidoc.yggdrasil.sessionserver.joinServer.description")
+)
 async def session_minecraft_join(info: RModels.Sessionserver_ServerJoin, request: Request):
     token = Token.getToken(info.accessToken)
     if not token:
@@ -39,7 +40,7 @@ async def session_minecraft_join(info: RModels.Sessionserver_ServerJoin, request
 
     session_server_join.setByTimedelta(info.serverId, {
         "token": token,
-        "character": character.FormatCharacter(Properties=True, auto=True),
+        "character": character,
         "remoteIp": request.client
     })
     return Response(status_code=204)
@@ -47,8 +48,14 @@ async def session_minecraft_join(info: RModels.Sessionserver_ServerJoin, request
 
 @router.get("/sessionserver/session/minecraft/hasJoined", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.sessionserver.hasJoined.summary"),
-    description=Ts_("apidoc.yggdrasil.sessionserver.hasJoined.description"))
-async def session_minecraft_hasJoined(username, serverId, ip=None):
+    description=Ts_("apidoc.yggdrasil.sessionserver.hasJoined.description"),
+    response_model=RModels.CharacterWithProperties
+)
+async def session_minecraft_hasJoined(
+        username: str,
+        serverId: str,
+        ip: IPvAnyAddress = None
+    ) -> RModels.CharacterWithProperties:
     info = session_server_join.get(serverId)
     if not info:
         return Response(status_code=204)
@@ -56,14 +63,16 @@ async def session_minecraft_hasJoined(username, serverId, ip=None):
         username == info['character']['name'],
         ip == info['remoteIp'] if ip else True
     ]):
-        return info['character']
+        return info['character'].FormatCharacter(Properties=True, auto=True)
     else:
         return Response(status_code=204)
 
 
 @router.get("/sessionserver/session/minecraft/profile/{profile}", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.sessionserver.profileQuery.summary"),
-    description=Ts_("apidoc.yggdrasil.sessionserver.profileQuery.description"))
+    description=Ts_("apidoc.yggdrasil.sessionserver.profileQuery.description"),
+    response_model=RModels.CharacterWithProperties
+)
 async def session_minecraft_query_profiles(request: Request, profile: uuid.UUID, unsigned: bool = True):
     character: Character = Character.get(PlayerId=profile)
     if not character:

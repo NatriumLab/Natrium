@@ -1,4 +1,3 @@
-from natrium import app, cache_pool, run
-
 if __name__ == "__main__":
+    from natrium import run
     run()

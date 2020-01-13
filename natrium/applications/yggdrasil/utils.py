@@ -7,6 +7,9 @@ from natrium.util.sign import key
 from functools import reduce
 from pony import orm
 from natrium.database.models import Character
+import typing
+from natrium.planets.models.request import yggdrasil as RModels
+
 
 @router.get("/",
     tags=['Yggdrasil'],
@@ -26,8 +29,10 @@ async def yggdrasil_index(request: Request):
 
 @router.post("/api/profiles/minecraft", tags=['Yggdrasil'],
     summary=Ts_("apidoc.yggdrasil.profilesQuery.summary"),
-    description=Ts_("apidoc.yggdrasil.profilesQuery.description"))
-async def yggdrasil_profiles_query(request: Request):
+    description=Ts_("apidoc.yggdrasil.profilesQuery.description"),
+    response_model=RModels.MultiCharacters
+)
+async def yggdrasil_profiles_query(request: Request) -> RModels.MultiCharacters:
     data = await request.json()
     data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)
     with orm.db_session:

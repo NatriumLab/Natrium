@@ -33,7 +33,7 @@ class Character(ConfiedModel):
     id: uuid.UUID
     name: str
 
-class CharacterWithSignature(Character):
+class CharacterWithProperties(Character):
     properties: typing.List[
         typing.Union[
             CharacterPropertyItem,
@@ -91,3 +91,11 @@ class Sessionserver_ServerJoin(BaseModel):
     accessToken: uuid.UUID
     selectedProfile: uuid.UUID
     serverId: str
+
+class MultiCharacters(ConfiedModel):
+    __root__: typing.List[
+        typing.Union[
+            Character,
+            CharacterWithProperties
+        ]
+    ]
