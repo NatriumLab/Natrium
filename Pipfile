@@ -6,6 +6,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+autopep8 = "*"
 
 [packages]
 fastapi = "*"
@@ -24,6 +25,7 @@ AioCacheBucket = "*"
 pillow = "*"
 python-multipart = "*"
 python-i18n = {extras = ["yaml"],version = "*"}
+orjson = "*"
 
 [pipenv]
 allow_prereleases = true

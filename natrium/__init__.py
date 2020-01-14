@@ -3,13 +3,13 @@ from .util.iife import IIFE
 from natrium.json_interface import selected_jsonencoder
 from pathlib import Path
 from conf import config
-from natrium.planets.buckets import cache_pool
+import logging
 
 app = FastAPI(openapi_url='/openapi/openapi.json', default_response_class=selected_jsonencoder)
+from natrium.planets.buckets import cache_pool
 
 @IIFE()
 def init_cache_close_scavenger():
-    
     app.add_event_handler("shutdown", cache_pool.close_scavenger)
 
 @IIFE()
@@ -32,10 +32,6 @@ def include_sub():
     from natrium.applications.natrium import router as Natrium
     app.include_router(Yggdrasil, prefix="/api/yggdrasil")
     app.include_router(Natrium, prefix="/natrium")
-
-@IIFE()
-def include_planets():
-    import natrium.planets
 
 def run():
     import uvicorn
