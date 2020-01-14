@@ -9,7 +9,7 @@ from pony import orm
 from natrium.database.models import Character
 import typing
 from natrium.planets.models.request import yggdrasil as RModels
-
+from functools import reduce
 
 @router.get("/",
     tags=['Yggdrasil'],
@@ -37,5 +37,11 @@ async def yggdrasil_profiles_query(request: Request) -> RModels.MultiCharacters:
     data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)
     with orm.db_session:
         result = [i.FormatCharacter(unsigned=True) for i in list(
-            orm.select(i for i in Character if i.PlayerName in data[0:config['meta']['ProfilesQueryLimit'] - 1]))]
+            orm.select(i for i in Character if i.PlayerName in \
+                reduce(
+                    lambda x, y: x if y in x else x + [y],
+                    [[], ] + \
+                        data[0:config['meta']['ProfilesQueryLimit'] - 1])
+            )
+        )]
     return result
