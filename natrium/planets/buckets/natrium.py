@@ -18,8 +18,23 @@ cache_pool.setup({
         "default_expire_delta": {
             "seconds": 3
         }
+    },
+    "natrium.mostima.register.request.ipLocks": {
+        "default_expire_delta": {
+            "seconds": 5
+        }
+    },
+    "natrium.mostima.register.requests": {
+        "default_expire_delta": {
+            "seconds": 180
+        }
     }
 })
 TokenBucket = cache_pool.getBucket("natrium.tokens")
 VerifyLocks = cache_pool.getBucket("natrium.authenticate.verify.locks")
 ValidateIpLocks = cache_pool.getBucket("natrium.authserver.validate.ipLocks")
+
+MostimaBuckets = ObjectiveDict({
+    "requestLimit": cache_pool.getBucket("natrium.mostina.register.request.ipLocks"),
+    "requests": cache_pool.getBucket("natrium.mostima.register.requests")
+})

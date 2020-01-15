@@ -26,6 +26,7 @@ pillow = "*"
 python-multipart = "*"
 python-i18n = {extras = ["yaml"],version = "*"}
 orjson = "*"
+zmail = "*"
 
 [pipenv]
 allow_prereleases = true

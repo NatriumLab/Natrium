@@ -68,7 +68,7 @@ async def amadeus_upload(
             "filename": file.filename
         })
     finally:
-        file.close()
+        await file.close()
 
     width, height = image.size
 

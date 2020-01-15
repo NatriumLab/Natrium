@@ -17,9 +17,11 @@ sudo yum install postgresql-libs
 sudo pacman -S postgresql-libs
 ```
 
-在Windows环境中部署时, 请先安装`Visual C++ Build Tools 14`, 以防止安装模块 `httptools` 时发生不可名状的错误.  
+在Windows环境中部署时, 请先安装`Visual C++ Build Tools 14`, 以防止安装模块时发生不可名状的错误.  
 [`Stack OverFlow` 上的相关问题](https://developercommunity.visualstudio.com/content/problem/431673/microsoft-visual-c-140-is-required.html)  
-若是您觉得太麻烦, 请使用WSL, 虽然我没用, 但为了你的时间着想, 还是请在GNU/Linux环境部署.
+若是您觉得太麻烦, 请使用WSL, 虽然我没用, 但为了你的时间着想, 还是请在GNU/Linux环境部署.  
+
+
 
 然后使用pip安装pipenv:
 ``` bash
@@ -46,8 +48,5 @@ python main.py
 pipenv run main
 ```
 
-#### 更好的性能
-你可以通过安装 `orjson` 获得更好的JSON序列化性能, 我们对该模块进行了有限的支持.
-``` bash
-pipenv install orjson
-```
+#### 关于orjson的使用
+在 [这个commit](https://github.com/NatriumLab/Natrium/commit/d09dad7ac72ea7c1691bab57286e3d2554a712cc) 中, `orjson` 被列入必须安装的扩展列表中, 以便开发者获取更为良好的开发体验.

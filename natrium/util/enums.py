@@ -23,3 +23,7 @@ class GroupJoin(Enum):
 class PublicStatus(str, Enum):
     Public = "public",
     Private = "private"
+
+class OperatorStatus(Enum):
+    success = "success"
+    failed = "failed"

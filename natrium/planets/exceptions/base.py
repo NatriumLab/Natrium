@@ -1,4 +1,4 @@
-from starlette.responses import JSONResponse as Response
+from natrium.json_interface import selected_jsonencoder as Response
 
 class OriginException(Exception):
     NoAnyMoreConfiure = False

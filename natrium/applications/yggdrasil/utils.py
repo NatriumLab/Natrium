@@ -1,15 +1,18 @@
-from . import router
-from conf import config
+import typing
+from functools import reduce
+
+from i18n import t as Ts_
+from pony import orm
 from starlette.requests import Request
 from starlette.responses import JSONResponse as Response
-from i18n import t as Ts_
-from natrium.util.sign import key
-from functools import reduce
-from pony import orm
+
+from conf import config
 from natrium.database.models import Character
-import typing
 from natrium.planets.models.request import yggdrasil as RModels
-from functools import reduce
+from natrium.util.sign import key
+
+from . import router
+
 
 @router.get("/",
     tags=['Yggdrasil'],
@@ -37,11 +40,11 @@ async def yggdrasil_profiles_query(request: Request) -> RModels.MultiCharacters:
     data = reduce(lambda x, y: x if y in x else x + [y], [[], ] + data)
     with orm.db_session:
         result = [i.FormatCharacter(unsigned=True) for i in list(
-            orm.select(i for i in Character if i.PlayerName in \
-                reduce(
-                    lambda x, y: x if y in x else x + [y],
-                    [[], ] + \
-                        data[0:config['meta']['ProfilesQueryLimit'] - 1])
-            )
+            orm.select(i for i in Character if i.PlayerName in
+                       reduce(
+                           lambda x, y: x if y in x else x + [y],
+                           [[], ] +
+                           data[0:config['meta']['ProfilesQueryLimit'] - 1])
+                       )
         )]
     return result

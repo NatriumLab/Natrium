@@ -17,6 +17,7 @@ from natrium.planets.exceptions import natrium as exceptions
 from natrium.planets.models.token.natrium import Token
 
 from natrium.planets.models.request.natrium import AInfo, OptionalAInfo
+from AioCacheBucket import AioCacheBucket
 
 
 def JSONForm(*args, **kwargs) -> Any:
@@ -145,3 +146,10 @@ async def ResourceFromPath(resourceId: uuid.UUID):
             raise exceptions.NoSuchResourceException()
         resource: Resource = resource.first()
         return resource
+
+def AutoIPLimits(bucket: AioCacheBucket, delta=None):
+    async def warpper(request: Request):
+        if bucket.get(request.client.host):
+            raise exceptions.FrequencyLimit()
+        bucket.setByTimedelta(request.client.host, "LOCKED", delta=delta)
+    return warpper
