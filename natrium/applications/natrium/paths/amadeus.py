@@ -15,6 +15,7 @@ from conf import config
 from natrium.database.models import Account, Character, Resource
 from natrium.planets.exceptions import natrium as exceptions
 from natrium.util import enums, hashing, res, skin
+from starlette.responses import Response
 
 from .. import depends, router
 
@@ -213,3 +214,21 @@ async def amadeus_upload(
             "operator": "success",
             "metadata": resource.format_self(requestHash=True)
         }
+
+@router.post(
+    "/amadeus/resource/{resourceId}/head",
+#    dependencies=[Depends(depends.Permissison("Normal"))],
+    tags=['Amadeus'],
+    summary=Ts_("apidoc.natrium.amadeus.resource.head.summary"),
+    description=Ts_("apidoc.natrium.amadeus.resource.head.description")
+)
+async def amadeus_resource_head(resource: Resource = Depends(depends.ResourceFromPath), account: Account = Depends(depends.AccountFromRequest)):
+    if resource.Type != "skin":
+        raise exceptions.NoSuchResourceException()
+    path = Path(f"./assets/resources/{resource.PicHash}.png")
+    im = Image.open(path.absolute())
+    headim = skin.gethead(im)
+    with BytesIO() as f:
+        headim.save(f, "PNG")
+        f.seek(0)
+        return Response(f.getvalue(), media_type="image/png")

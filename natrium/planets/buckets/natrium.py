@@ -35,6 +35,6 @@ VerifyLocks = cache_pool.getBucket("natrium.authenticate.verify.locks")
 ValidateIpLocks = cache_pool.getBucket("natrium.authserver.validate.ipLocks")
 
 MostimaBuckets = ObjectiveDict({
-    "requestLimit": cache_pool.getBucket("natrium.mostina.register.request.ipLocks"),
+    "requestLimit": cache_pool.getBucket("natrium.mostima.register.request.ipLocks"),
     "requests": cache_pool.getBucket("natrium.mostima.register.requests")
 })

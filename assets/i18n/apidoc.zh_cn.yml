@@ -109,3 +109,6 @@ zh_cn:
 
   utils.static_resource.summary: Utils 访问静态资源
   utils.static_resource.description: 自给出的静态资源名称中返回静态资源内容
+
+  natrium.mostima_register.request.summary: Natrium Mostima 发送注册请求
+  natrium.mostima_register.request.description: 向该API发送请求, 在服务端存储数据以保证验证上下文完整性

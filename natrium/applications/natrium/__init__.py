@@ -10,3 +10,4 @@ import natrium.applications.natrium.paths.amadeus
 import natrium.applications.natrium.paths.authserver
 import natrium.applications.natrium.paths.optionserver
 import natrium.applications.natrium.paths.resourceserver
+import natrium.applications.natrium.paths.mostima

@@ -1,0 +1,3 @@
+zh_cn:
+  mail_content.subject: 这是来自Natrium Mostima Register Service的一封验证邮件.
+  mail_content.content_text: "鄙站很荣幸贵客的加入, 这里是验证地址: {verify_url}"

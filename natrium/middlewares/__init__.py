@@ -1,1 +1,2 @@
 import natrium.middlewares.ponyorm_dbsession
+import natrium.middlewares.cors

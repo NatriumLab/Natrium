@@ -2,10 +2,10 @@ import uuid
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from pydantic import EmailStr
 
 from natrium.util import res
 from natrium.util import enums
-from natrium.planets.components.email.models import Email
 
 
 class AuthenticateInfo(BaseModel):
@@ -55,7 +55,7 @@ class ResourceUpdate(BaseModel):
     update: ResourceUpdateOptions
 
 class MostimaRegister(BaseModel):
-    email: Email
+    email: EmailStr
     accountName: str = Field(..., regex=res.AccountName)
     password: str = Field(..., regex=res.Password)
-    
+    redirectTo: Optional[str] = None

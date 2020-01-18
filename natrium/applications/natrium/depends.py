@@ -35,10 +35,13 @@ def JSONForm(*args, **kwargs) -> Any:
 def TokenVerify(form=False, alias=None):
     if not form:
         async def warpper(Authenticate: AInfo) -> Token:
-            token = Token.getToken(
-                Authenticate.auth.accessToken,
-                ClientToken=Authenticate.auth.clientToken
-            )
+            try:
+                token = Token.getToken(
+                    Authenticate.auth.accessToken,
+                    ClientToken=Authenticate.auth.clientToken
+                )
+            except ValueError:
+                raise exceptions.AuthenticateVerifyException()
             if not token:
                 raise exceptions.AuthenticateVerifyException()
             if not token.is_alive:
@@ -68,10 +71,13 @@ def AccountFromRequestForm(alias=None):
     return AccountFromRequestForm_warpper
 
 async def TokenStatus(Authenticate: AInfo) -> Dict:
-    token = Token.getToken(
-        Authenticate.auth.accessToken,
-        ClientToken=Authenticate.auth.clientToken
-    )
+    try:
+        token = Token.getToken(
+            Authenticate.auth.accessToken,
+            ClientToken=Authenticate.auth.clientToken
+        )
+    except ValueError:
+        return {"status": "unknown"}
     if not token:
         return {"status": "non-exist"}
     if token.ExpireDate > maya.now() > token.AliveDate:
@@ -90,10 +96,13 @@ def Permissison(Permission):
     return PermissionWarpper
 
 async def OptionalTokenVerify(Authenticate: AInfo) -> Optional[Token]:
-    token = Token.getToken(
-        Authenticate.auth.accessToken,
-        ClientToken=Authenticate.auth.clientToken
-    )
+    try:
+        token = Token.getToken(
+            Authenticate.auth.accessToken,
+            ClientToken=Authenticate.auth.clientToken
+        )
+    except ValueError:
+        return None
     if not token:
         return None
     if not token.is_alive:
@@ -147,9 +156,9 @@ async def ResourceFromPath(resourceId: uuid.UUID):
         resource: Resource = resource.first()
         return resource
 
-def AutoIPLimits(bucket: AioCacheBucket, delta=None):
+def AutoIPLimits(bucket: AioCacheBucket, delta={}):
     async def warpper(request: Request):
         if bucket.get(request.client.host):
             raise exceptions.FrequencyLimit()
         bucket.setByTimedelta(request.client.host, "LOCKED", delta=delta)
-    return warpper
+    return Depends(warpper)

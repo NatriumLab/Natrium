@@ -24,10 +24,9 @@ from natrium.util.randoms import String
     summary=Ts_("apidoc.natrium.authserver.index.summary"),
     description=Ts_("apidoc.natrium.authserver.index.description"))
 async def authserver_authenticate(authinfo: AuthenticateRequest):
-    account = orm.select(i for i in Account if i.Email == authinfo.email)
-    if not account.exists():
+    account = Account.get(Email=authinfo.email)
+    if not account:
         raise exceptions.InvalidCredentials()
-    account: Account = account.first()
 
     if not VerifyLocks.get(account.Id):
         VerifyLocks.setByTimedelta(account.Id, "LOCKED")
@@ -67,8 +66,8 @@ async def authserver_authenticate(authinfo: AuthenticateRequest):
 @router.post("/authserver/refresh", tags=['AuthServer'],
     summary=Ts_("apidoc.natrium.authserver.refresh.summary"),
     description=Ts_("apidoc.natrium.authserver.refresh.description"))
-async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify)):
-    account = Token.Account
+async def authserver_refresh(old_token: Token = Depends(depends.TokenVerify())):
+    account = old_token.Account
 
     # 频率限制
     if not VerifyLocks.get(account.Id):
@@ -118,9 +117,12 @@ async def authserver_validate(
 @router.post("/authserver/invalidate", tags=['AuthServer'],
     summary=Ts_("apidoc.natrium.authserver.invalidate.summary"),
     description=Ts_("apidoc.natrium.authserver.invalidate.description"))
-async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
+async def authserver_invalidate(token: Token = Depends(depends.TokenVerify())):
     """注销请求中给出的Token"""
-    TokenBucket.delete(token.AccessToken)
+    try:
+        TokenBucket.delete(token.AccessToken)
+    except:
+        pass
     return {"operator": "success"}
 
 @router.post("/authserver/signout", tags=['AuthServer'],
@@ -128,7 +130,7 @@ async def authserver_invalidate(token: Token = Depends(depends.TokenVerify)):
     description=Ts_("apidoc.natrium.authserver.signout.description"))
 async def authserver_signout(authinfo: AccountAuth):
     account = Account.get(Email=authinfo.email)
-    if not account.exists():
+    if not account:
         raise exceptions.InvalidCredentials()
 
     if not VerifyLocks.get(account.Id):

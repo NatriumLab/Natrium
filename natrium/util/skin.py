@@ -1,8 +1,8 @@
 """
-Inspired by :
-  skinview3d(https://github.com/bs-community/skinview3d)
-  skinview-utils(https://github.com/yushijinhun/skinview-utils)
-Python Port by NatriumLab.
+Inspired by : \n
+  skinview3d(https://github.com/bs-community/skinview3d)  \n
+  skinview-utils(https://github.com/yushijinhun/skinview-utils)  \n
+Python Port by NatriumLab.  
 """
 from PIL import Image, ImageDraw
 
@@ -102,10 +102,25 @@ def convertSkinTo1_8(context: Image.Image, width: int):
 def convertSkinTo1_8_auto(context: Image.Image):
     return convertSkinTo1_8(context, context.width)
 
+def getblock(context: Image.Image, box, scale):
+    return context.crop((
+        box[0]*scale*8,
+        box[1]*scale*8,
+        (box[0]+1)*scale*8,
+        (box[1]+1)*scale*8
+    ))
+
+def gethead(context: Image.Image):
+    scale = computeSkinScale(context.width)
+    head = getblock(context, (1, 1), scale)
+    heat = getblock(context, (5, 1), scale)
+    head.paste(heat, (0, 0), heat.getchannel("B"))
+    return head
+
 if __name__ == "__main__":
     from PIL import Image
     assert isSilmSkin(Image.open("./assets/resources/81c26f889ba6ed12f97efbac639802812c687b4ffcc88ea75d6a8d077328b3bf.png")) == False
     assert isSilmSkin(Image.open("./assets/resources/490bd08f1cc7fce67f2e7acb877e5859d1605f4ffb0893b07607deae5e05becc.png")) == True
     me: Image.Image = Image.open("./assets/resources/81c26f889ba6ed12f97efbac639802812c687b4ffcc88ea75d6a8d077328b3bf.png")
     #fixOpaqueSkin(me, 64)
-    convertSkinTo1_8_auto(me).show()
+    gethead(convertSkinTo1_8_auto(me)).show()
