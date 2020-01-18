@@ -51,10 +51,13 @@ def TokenVerify(form=False, alias=None):
     else:
         async def warpper(Authenticate = JSONForm(..., alias=alias)):
             data = AInfo.parse_obj(Authenticate)
-            token = Token.getToken(
-                data.auth.accessToken,
-                ClientToken=data.auth.clientToken
-            )
+            try:
+                token = Token.getToken(
+                    data.auth.accessToken,
+                    ClientToken=data.auth.clientToken
+                )
+            except ValueError:
+                raise exceptions.AuthenticateVerifyException()
             if not token:
                 raise exceptions.AuthenticateVerifyException()
             if not token.is_alive:
